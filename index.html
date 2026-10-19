@@ -20,17 +20,30 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
-    const getGenerativeImageUrl = (prompt, width = 600, height = 600) => {
-      const sanitized = encodeURIComponent(prompt.trim() || "portrait aesthetic person cinematic");
-      const randomSeed = Math.floor(Math.random() * 9999999);
-      return `https://image.pollinations.ai/prompt/${sanitized}?width=${width}&height=${height}&seed=${randomSeed}&nologo=true`;
+    // Strict Gender & Demographic Photo Generator using Flux Model
+    const getStrictAvatarUrl = ({ gender = "guy", age = "20", ethnicity = "", style = "casual collegiate", seed = 12345 }) => {
+      const genderTerm = gender.toLowerCase() === "guy" || gender.toLowerCase() === "male" 
+        ? "handsome young man, male facial features, masculine jawline, short clean haircut, athletic build"
+        : "pretty young woman, female facial features, feminine styling, styled hair, soft natural lighting";
+
+      const promptString = `close up headshot portrait photo of a ${age} year old ${ethnicity} ${genderTerm}, dressed in ${style}, authentic high quality 35mm film photography, crisp focus, neutral background, realistic skin texture`;
+      const cleanPrompt = encodeURIComponent(promptString);
+      return `https://image.pollinations.ai/prompt/${cleanPrompt}?width=500&height=500&seed=${seed}&nologo=true&model=flux`;
     };
 
+    const getGeneralImageUrl = (prompt, width = 600, height = 600) => {
+      const cleanPrompt = encodeURIComponent(prompt.trim() || "cinematic photography authentic mood");
+      const seed = Math.floor(Math.random() * 9999999);
+      return `https://image.pollinations.ai/prompt/${cleanPrompt}?width=${width}&height=${height}&seed=${seed}&nologo=true&model=flux`;
+    };
+
+    // Seeded NPC Dataset with Strict Genders and Curated Photos
     const INITIAL_NPCS = [
       {
         id: "npc_1",
         name: "Elena Vance",
         handle: "elenavance",
+        gender: "female",
         avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80",
         category: "fashion",
         verified: true,
@@ -48,15 +61,6 @@
             likedByPlayer: false,
             timestamp: "2h ago",
             comments: [{ id: "c1", user: "chloeluxe", text: "THAT SILHOUETTE 🔥", likes: 341 }]
-          },
-          {
-            id: "p_elena_2",
-            image: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&auto=format&fit=crop&q=80",
-            caption: "Backstage mood. No photos unless approved.",
-            likes: 94100,
-            likedByPlayer: false,
-            timestamp: "1d ago",
-            comments: [{ id: "c2", user: "vogue_daily", text: "flawless", likes: 88 }]
           }
         ]
       },
@@ -64,6 +68,7 @@
         id: "npc_2",
         name: "Jaxson Cole",
         handle: "jaxsoncole",
+        gender: "male",
         avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80",
         category: "musicians",
         verified: true,
@@ -81,15 +86,6 @@
             likedByPlayer: false,
             timestamp: "4h ago",
             comments: [{ id: "c3", user: "beatmaker_sam", text: "drop the snippet bro", likes: 212 }]
-          },
-          {
-            id: "p_jax_2",
-            image: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80",
-            caption: "vinyl digging in Tokyo. found some rare 1974 funk gems.",
-            likes: 31200,
-            likedByPlayer: false,
-            timestamp: "3d ago",
-            comments: [{ id: "c4", user: "audiophile99", text: "holy grail", likes: 54 }]
           }
         ]
       },
@@ -97,6 +93,7 @@
         id: "npc_3",
         name: "Trey Jenkins",
         handle: "trey_iron",
+        gender: "male",
         avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&auto=format&fit=crop&q=80",
         category: "gym",
         verified: false,
@@ -126,6 +123,7 @@
           id: "npc_mut_1",
           name: "Maya Chen",
           handle: "mayac",
+          gender: "female",
           avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=300&auto=format&fit=crop&q=80",
           category: "mutual",
           verified: false,
@@ -151,6 +149,7 @@
           id: "npc_mut_2",
           name: "Alex Rivera",
           handle: "alexrivers",
+          gender: "male",
           avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=300&auto=format&fit=crop&q=80",
           category: "mutual",
           verified: false,
@@ -176,7 +175,6 @@
     };
 
     function App() {
-      // Key Pool State
       const [apiKeys, setApiKeys] = useState(() => {
         const saved = localStorage.getItem("status_sim_keys_pool");
         return saved ? JSON.parse(saved) : [];
@@ -184,7 +182,6 @@
       const [newKeyInput, setNewKeyInput] = useState("");
       const [aiStatusMessage, setAiStatusMessage] = useState("");
 
-      // Save Slots
       const [saves, setSaves] = useState(() => {
         const saved = localStorage.getItem("status_sim_multi_saves");
         return saved ? JSON.parse(saved) : {
@@ -193,7 +190,6 @@
       });
       const [activeSlot, setActiveSlot] = useState("slot_1");
 
-      // Game Data
       const [player, setPlayer] = useState(null);
       const [feed, setFeed] = useState([]);
       const [npcs, setNpcs] = useState([]);
@@ -202,21 +198,21 @@
       const [activeDmUser, setActiveDmUser] = useState(null);
       const [activeTab, setActiveTab] = useState("feed");
 
-      // Inspection Navigation
       const [inspectedUser, setInspectedUser] = useState(null);
       const [inspectedPost, setInspectedPost] = useState(null);
       const [postCommentInput, setPostCommentInput] = useState("");
 
-      // Onboarding
+      // Onboarding with Explicit Gender & Visual Spec
       const [onboardingStep, setOnboardingStep] = useState(1);
       const [formName, setFormName] = useState("");
       const [formHandle, setFormHandle] = useState("");
       const [formBio, setFormBio] = useState("");
       const [formAge, setFormAge] = useState("20");
+      const [formGender, setFormGender] = useState("Guy"); // Guy, Girl, Non-binary
       const [formSchoolWork, setFormSchoolWork] = useState("Ohio State");
       const [formAspirations, setFormAspirations] = useState("Aspiring Creative");
       const [avatarMethod, setAvatarMethod] = useState("ai");
-      const [avatarPrompt, setAvatarPrompt] = useState("20yo college guy film photography portrait aesthetic");
+      const [avatarStyle, setAvatarStyle] = useState("vintage collegiate streetwear");
       const [avatarUrl, setAvatarUrl] = useState("");
       const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
 
@@ -234,7 +230,6 @@
       const [showSettings, setShowSettings] = useState(false);
       const [isGeneratingNpcs, setIsGeneratingNpcs] = useState(false);
 
-      // Sync active save
       useEffect(() => {
         if (player) {
           const updatedSaves = {
@@ -249,7 +244,6 @@
         }
       }, [player, feed, npcs, dms]);
 
-      // Load active slot
       useEffect(() => {
         const slotData = saves[activeSlot];
         if (slotData && slotData.gameState) {
@@ -263,7 +257,6 @@
         }
       }, [activeSlot]);
 
-      // Add a single key to pool
       const handleAddKey = () => {
         const trimmed = newKeyInput.trim();
         if (!trimmed) return;
@@ -283,9 +276,15 @@
         localStorage.setItem("status_sim_keys_pool", JSON.stringify(updated));
       };
 
+      // Strict Demographic Avatar Generation
       const handleGenerateAiAvatar = () => {
         setIsGeneratingAvatar(true);
-        const url = getGenerativeImageUrl(avatarPrompt, 500, 500);
+        const url = getStrictAvatarUrl({
+          gender: formGender,
+          age: formAge,
+          style: avatarStyle,
+          seed: Math.floor(Math.random() * 8888888)
+        });
         const img = new Image();
         img.src = url;
         img.onload = () => {
@@ -293,7 +292,11 @@
           setIsGeneratingAvatar(false);
         };
         img.onerror = () => {
-          setAvatarUrl(`https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80`);
+          // Guaranteed fallback photo matching selected gender
+          const fallback = formGender === "Guy"
+            ? "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80"
+            : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80";
+          setAvatarUrl(fallback);
           setIsGeneratingAvatar(false);
         };
       };
@@ -308,10 +311,15 @@
       };
 
       const handleCompleteOnboarding = () => {
-        const finalAvatar = avatarUrl || getGenerativeImageUrl("young creative person aesthetic");
+        const defaultFallback = formGender === "Guy"
+          ? "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80"
+          : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80";
+
+        const finalAvatar = avatarUrl || defaultFallback;
         const newPlayer = {
-          name: formName || "Jordan Rivers",
+          name: formName || (formGender === "Guy" ? "Jordan Rivers" : "Jordan Rivers"),
           handle: (formHandle || "jordanrivers").toLowerCase().replace(/[^a-z0-9_]/g, ""),
+          gender: formGender,
           avatar: finalAvatar,
           bio: formBio || "making memories & staying lowkey ✨",
           age: formAge,
@@ -371,27 +379,21 @@
         }
       };
 
-      // Like / Unlike any post
       const handleToggleLike = (post) => {
         const isLiked = post.likedByPlayer;
         const delta = isLiked ? -1 : 1;
 
-        // Update in feed
         setFeed(prev => prev.map(p => p.id === post.id ? { ...p, likes: p.likes + delta, likedByPlayer: !isLiked } : p));
-        
-        // Update in NPCs catalog if belonging to NPC
         setNpcs(prev => prev.map(npc => ({
           ...npc,
           posts: npc.posts.map(p => p.id === post.id ? { ...p, likes: p.likes + delta, likedByPlayer: !isLiked } : p)
         })));
 
-        // If inspecting post
         if (inspectedPost && inspectedPost.id === post.id) {
           setInspectedPost(prev => ({ ...prev, likes: prev.likes + delta, likedByPlayer: !isLiked }));
         }
       };
 
-      // Add a comment to an NPC or player post
       const handleAddComment = (post) => {
         if (!postCommentInput.trim()) return;
 
@@ -413,7 +415,6 @@
 
         setPostCommentInput("");
 
-        // NPC reacts or replies to comment after a delay
         setTimeout(() => {
           const npcAuthor = npcs.find(n => n.handle === post.author.handle);
           if (npcAuthor && npcAuthor.category === "mutual") {
@@ -436,7 +437,7 @@
         }, 1800);
       };
 
-      // Generate New AI Characters On Demand
+      // Generate AI NPCs with Gender-Consistent Anchoring
       const handleGenerateMoreAiNpcs = async () => {
         setIsGeneratingNpcs(true);
         setAiStatusMessage("Spawning new personas via AI...");
@@ -459,7 +460,7 @@
                   messages: [
                     {
                       role: "system",
-                      content: `Generate 2 realistic social profiles for peers near ${player.schoolWork}. Return ONLY valid JSON array with keys: name, handle, bio, disposition, relationship, photo_prompt. No markdown formatting, just raw JSON.`
+                      content: `Generate 2 realistic social profiles for college peers near ${player.schoolWork}. Return ONLY valid JSON array with keys: name, handle, gender (strictly "male" or "female"), age, bio, disposition, relationship. No markdown formatting.`
                     }
                   ]
                 })
@@ -473,62 +474,80 @@
                 break;
               }
             } catch (err) {
-              console.warn("Key error on generation, trying next...");
+              console.warn("Key error, trying next...");
             }
           }
         }
 
         if (!generatedProfiles || !Array.isArray(generatedProfiles)) {
-          const names = ["Marcus Bell", "Chloe Bennett", "Kai Thorne", "Zoe Vance"];
-          const picked = names[Math.floor(Math.random() * names.length)];
+          const maleNames = ["Marcus Bell", "Kai Thorne", "Liam Vance", "Noah Davis"];
+          const femaleNames = ["Chloe Bennett", "Zoe Mitchell", "Sophia Reed", "Harper Lin"];
+          const isBoy = Math.random() > 0.5;
+          const chosenName = isBoy 
+            ? maleNames[Math.floor(Math.random() * maleNames.length)]
+            : femaleNames[Math.floor(Math.random() * femaleNames.length)];
+
           generatedProfiles = [
             {
-              name: picked,
-              handle: picked.toLowerCase().replace(" ", "_"),
-              bio: `local around ${player.schoolWork} | late night photography`,
-              disposition: "chill, artistic, dry humor",
-              relationship: "Mutual Acquaintance",
-              photo_prompt: "young aesthetic college student portrait film 35mm"
+              name: chosenName,
+              handle: chosenName.toLowerCase().replace(" ", "_"),
+              gender: isBoy ? "male" : "female",
+              age: "21",
+              bio: `around ${player.schoolWork} | late night drives & film`,
+              disposition: "chill, dry humor, spontaneous",
+              relationship: "Campus Mutual"
             }
           ];
         }
 
-        const formatted = generatedProfiles.map((p, idx) => ({
-          id: "npc_gen_" + Date.now() + "_" + idx,
-          name: p.name,
-          handle: p.handle.toLowerCase().replace(/[^a-z0-9_]/g, ""),
-          avatar: getGenerativeImageUrl(p.photo_prompt || "portrait aesthetic person", 300, 300),
-          category: "mutual",
-          verified: false,
-          followers: Math.floor(Math.random() * 800) + 200,
-          following: Math.floor(Math.random() * 600) + 150,
-          bio: p.bio,
-          relationship: p.relationship || "Suggested Connection",
-          mutualBadge: `Around ${player.schoolWork}`,
-          disposition: p.disposition,
-          posts: [
-            {
-              id: "p_gen_" + Date.now() + "_" + idx,
-              image: getGenerativeImageUrl("film photography aesthetic portrait", 600, 600),
-              caption: "new camera test 🎞️",
-              likes: Math.floor(Math.random() * 80) + 20,
-              likedByPlayer: false,
-              timestamp: "1h ago",
-              comments: []
-            }
-          ]
-        }));
+        const formatted = generatedProfiles.map((p, idx) => {
+          const isGuy = (p.gender || "male").toLowerCase() === "male";
+          const uniqueSeed = Math.floor(Math.random() * 9999999);
+          const strictAvatar = getStrictAvatarUrl({
+            gender: isGuy ? "guy" : "girl",
+            age: p.age || "21",
+            style: "trendy college streetwear",
+            seed: uniqueSeed
+          });
+
+          return {
+            id: "npc_gen_" + Date.now() + "_" + idx,
+            name: p.name,
+            handle: p.handle.toLowerCase().replace(/[^a-z0-9_]/g, ""),
+            gender: isGuy ? "male" : "female",
+            avatar: strictAvatar,
+            category: "mutual",
+            verified: false,
+            followers: Math.floor(Math.random() * 800) + 200,
+            following: Math.floor(Math.random() * 600) + 150,
+            bio: p.bio,
+            relationship: p.relationship || "Suggested Connection",
+            mutualBadge: `Around ${player.schoolWork}`,
+            disposition: p.disposition,
+            posts: [
+              {
+                id: "p_gen_" + Date.now() + "_" + idx,
+                image: getGeneralImageUrl("authentic film camera photo casual lifestyle", 600, 600),
+                caption: "camera dump 🎞️",
+                likes: Math.floor(Math.random() * 80) + 20,
+                likedByPlayer: false,
+                timestamp: "1h ago",
+                comments: []
+              }
+            ]
+          };
+        });
 
         setNpcs(prev => [...formatted, ...prev]);
         setSuggestedFollows(prev => [...formatted, ...prev]);
         setIsGeneratingNpcs(false);
-        setAiStatusMessage("New profiles generated!");
+        setAiStatusMessage("New profiles generated with matching portraits!");
         setTimeout(() => setAiStatusMessage(""), 3000);
       };
 
       const handleGeneratePostImage = () => {
         setIsGeneratingPostImg(true);
-        const url = getGenerativeImageUrl(postAiPrompt || "film camera aesthetic photo instagram post", 700, 700);
+        const url = getGeneralImageUrl(postAiPrompt || "film camera aesthetic photo instagram post", 700, 700);
         const img = new Image();
         img.src = url;
         img.onload = () => {
@@ -542,7 +561,7 @@
       };
 
       const handleCreatePost = () => {
-        const finalImg = postImageUrl || getGenerativeImageUrl(postAiPrompt || "aesthetic moment", 700, 700);
+        const finalImg = postImageUrl || getGeneralImageUrl(postAiPrompt || "aesthetic moment", 700, 700);
         const currentFollowers = player.followers;
         let viralRoll = Math.random();
         if (postVibe === "Unfiltered Rant" || postVibe === "Hot Take (Risky / Viral)") viralRoll += 0.25;
@@ -571,8 +590,7 @@
         } else if (isViral) {
           generatedComments.push(
             { id: "cm_v1", user: "random_lurker_42", text: "why is this on my explore page lmao", likes: 142 },
-            { id: "cm_v2", user: "trey_iron", text: "actually valid ngl", likes: 89 },
-            { id: "cm_v3", user: "hater_patrol", text: "bro thought he did something here 💀", likes: 34 }
+            { id: "cm_v2", user: "trey_iron", text: "actually valid ngl", likes: 89 }
           );
         } else {
           generatedComments.push(
@@ -620,7 +638,6 @@
         setActiveTab("feed");
       };
 
-      // Multi-Key Failover DM Sender
       const handleSendDm = async (targetNpc) => {
         if (!dmMessage.trim() || isSendingDm) return;
 
@@ -643,7 +660,7 @@
           for (let i = 0; i < apiKeys.length; i++) {
             const currentKey = apiKeys[i].trim();
             try {
-              const systemPrompt = `You are ${targetNpc.name} (@${targetNpc.handle}) in an unfiltered Instagram simulator. Bio: "${targetNpc.bio}". Relationship: "${targetNpc.relationship}". Personality: "${targetNpc.disposition}". You are texting back via Instagram DMs. Respond in authentic internet texting, lowercase often, under 25 words. Don't be robotic.`;
+              const systemPrompt = `You are ${targetNpc.name} (@${targetNpc.handle}) in an unfiltered Instagram simulator. You are a ${targetNpc.gender || 'person'}. Bio: "${targetNpc.bio}". Relationship: "${targetNpc.relationship}". Personality: "${targetNpc.disposition}". You are texting back via Instagram DMs. Respond in authentic internet texting, lowercase often, under 25 words. Don't be robotic.`;
 
               const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                 method: "POST",
@@ -671,7 +688,7 @@
                 }
               }
             } catch (err) {
-              console.warn(`Key #${i + 1} failed, rolling to next...`);
+              console.warn(`Key failed, rolling...`);
             }
           }
         }
@@ -693,7 +710,6 @@
           return;
         }
 
-        // Offline Heuristic Fallback
         setTimeout(() => {
           let replyText = "Seen";
           if (targetNpc.verified && player.followers < 10000) {
@@ -769,7 +785,7 @@
                 setApiKeys(imported.keys);
                 localStorage.setItem("status_sim_keys_pool", JSON.stringify(imported.keys));
               }
-              alert("Game progress and stacked API keys imported successfully!");
+              alert("Import successful!");
             } catch (err) {
               alert("Invalid JSON sync file.");
             }
@@ -778,7 +794,6 @@
         }
       };
 
-      // Open inspection of any user
       const handleOpenUserProfile = (user) => {
         setInspectedUser(user);
         setInspectedPost(null);
@@ -821,6 +836,26 @@
                       />
                     </div>
                   </div>
+
+                  {/* Gender Selector for Strict Avatar Consistency */}
+                  <div>
+                    <label className="text-xs font-medium text-zinc-300">Gender (Locks portrait accuracy)</label>
+                    <div className="grid grid-cols-2 gap-2 mt-1">
+                      <button 
+                        onClick={() => setFormGender("Guy")} 
+                        className={`py-2 text-xs font-semibold rounded-lg border ${formGender === "Guy" ? "bg-pink-600 border-pink-500 text-white" : "border-zinc-800 bg-zinc-950 text-zinc-400"}`}
+                      >
+                        Male / Guy ♂
+                      </button>
+                      <button 
+                        onClick={() => setFormGender("Girl")} 
+                        className={`py-2 text-xs font-semibold rounded-lg border ${formGender === "Girl" ? "bg-pink-600 border-pink-500 text-white" : "border-zinc-800 bg-zinc-950 text-zinc-400"}`}
+                      >
+                        Female / Girl ♀
+                      </button>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs font-medium text-zinc-300">Age</label>
@@ -848,7 +883,7 @@
                       placeholder="e.g. sample flips & late night tempo runs 📻"
                       value={formBio}
                       onChange={e => setFormBio(e.target.value)}
-                      className="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-pink-500 h-20 resize-none"
+                      className="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-pink-500 h-16 resize-none"
                     />
                   </div>
                   <button 
@@ -899,18 +934,19 @@
 
                   {avatarMethod === "ai" && (
                     <div className="space-y-2">
-                      <textarea 
-                        value={avatarPrompt}
-                        onChange={e => setAvatarPrompt(e.target.value)}
-                        placeholder="Describe your look (e.g. 20yo guy aesthetic 35mm film grain portrait)"
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-pink-500 h-16 resize-none"
+                      <input 
+                        type="text"
+                        value={avatarStyle}
+                        onChange={e => setAvatarStyle(e.target.value)}
+                        placeholder="Outfit / style (e.g. vintage leather jacket, athletic streetwear)"
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-pink-500"
                       />
                       <button 
                         onClick={handleGenerateAiAvatar}
                         disabled={isGeneratingAvatar}
                         className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-xs text-pink-400 font-semibold rounded-lg border border-pink-500/30 transition"
                       >
-                        {isGeneratingAvatar ? "Dreaming avatar..." : "✨ Generate Avatar"}
+                        {isGeneratingAvatar ? "Generating matching portrait..." : `✨ Generate ${formGender} Portrait`}
                       </button>
                     </div>
                   )}
@@ -940,8 +976,8 @@
                     <div className="flex items-center gap-3 p-2 bg-zinc-950 rounded-xl border border-zinc-800">
                       <img src={avatarUrl} alt="Preview" className="w-14 h-14 rounded-full object-cover border border-pink-500" />
                       <div>
-                        <div className="text-xs font-semibold text-white">Avatar Loaded</div>
-                        <div className="text-[10px] text-zinc-500">Ready to launch.</div>
+                        <div className="text-xs font-semibold text-white">Portrait Locked</div>
+                        <div className="text-[10px] text-zinc-500">Matches: {formGender}, {formAge} y/o</div>
                       </div>
                     </div>
                   )}
@@ -976,7 +1012,7 @@
                   const isFollowing = player.followingList?.includes(user.id);
                   return (
                     <div key={user.id} className="flex items-center justify-between p-3 bg-zinc-950 rounded-xl border border-zinc-800/80">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleOpenUserProfile(user)}>
                         <img src={user.avatar} className="w-11 h-11 rounded-full object-cover border border-zinc-800" />
                         <div>
                           <div className="text-sm font-semibold text-white flex items-center gap-1">
@@ -1042,7 +1078,6 @@
                   <button onClick={() => setShowSettings(false)} className="text-xs text-zinc-400">✕</button>
                 </div>
                 
-                {/* Save Slots */}
                 <div className="space-y-2">
                   <label className="text-xs text-zinc-400">Active Game Slot:</label>
                   <div className="grid grid-cols-2 gap-2">
@@ -1066,13 +1101,12 @@
                   </div>
                 </div>
 
-                {/* Single-Key Stacking Box */}
                 <div className="pt-2 border-t border-zinc-800 space-y-2">
-                  <label className="text-xs text-zinc-400 font-semibold">Stack API Keys (No Commas Needed)</label>
+                  <label className="text-xs text-zinc-400 font-semibold">Stack API Keys</label>
                   <div className="flex gap-2">
                     <input 
                       type="password"
-                      placeholder="Paste single key here (sk-or-v1-...)"
+                      placeholder="Paste key (sk-or-v1-...)"
                       value={newKeyInput}
                       onChange={e => setNewKeyInput(e.target.value)}
                       className="flex-1 bg-zinc-950 border border-zinc-800 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-pink-500"
@@ -1137,7 +1171,6 @@
                         <span className="text-zinc-300">{inspectedPost.caption}</span>
                       </p>
 
-                      {/* Comments Section */}
                       <div className="border-t border-zinc-900 pt-2 space-y-2">
                         <div className="text-xs font-bold text-zinc-400">Comments</div>
                         {(!inspectedPost.comments || inspectedPost.comments.length === 0) ? (
@@ -1155,7 +1188,6 @@
                         )}
                       </div>
 
-                      {/* Comment Input */}
                       <div className="flex gap-2 pt-2 border-t border-zinc-900">
                         <input 
                           type="text" 
@@ -1173,7 +1205,7 @@
                   </div>
                 </div>
               ) : inspectedUser ? (
-                // USER PROFILE INSPECTION VIEW
+                // USER PROFILE INSPECTION
                 <div className="p-4 space-y-4">
                   <button onClick={() => setInspectedUser(null)} className="text-xs font-bold text-zinc-400 hover:text-white flex items-center gap-1">
                     ← Back to {activeTab}
@@ -1207,7 +1239,6 @@
                     <div className="text-[11px] text-pink-400 mt-1 font-medium">{inspectedUser.relationship}</div>
                   </div>
 
-                  {/* Actions */}
                   <div className="flex gap-2">
                     <button 
                       onClick={() => handleFollow(inspectedUser)}
@@ -1223,7 +1254,6 @@
                     </button>
                   </div>
 
-                  {/* Posts Grid */}
                   <div>
                     <div className="text-xs font-bold uppercase tracking-wider text-zinc-400 border-b border-zinc-800 pb-2 mb-2">Posts</div>
                     {(!inspectedUser.posts || inspectedUser.posts.length === 0) ? (
@@ -1428,7 +1458,7 @@
                         disabled={isGeneratingPostImg}
                         className="w-full py-2 bg-zinc-900 hover:bg-zinc-800 text-xs text-pink-400 font-semibold rounded-lg border border-pink-500/30 transition"
                       >
-                        {isGeneratingPostImg ? "Generating with Pollinations AI..." : "✨ Generate Photo"}
+                        {isGeneratingPostImg ? "Generating with Flux AI..." : "✨ Generate Photo"}
                       </button>
                     </div>
                   )}
@@ -1617,7 +1647,7 @@
                     </h2>
                     <div className="text-xs text-zinc-500 font-mono">@{player.handle}</div>
                     <p className="text-xs text-zinc-300 mt-1.5 whitespace-pre-line">{player.bio}</p>
-                    <div className="text-[11px] text-pink-400 mt-1 font-medium">📍 {player.schoolWork} • {player.age} y/o</div>
+                    <div className="text-[11px] text-pink-400 mt-1 font-medium">📍 {player.schoolWork} • {player.age} y/o ({player.gender})</div>
                   </div>
 
                   <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3.5 space-y-1.5">
@@ -1673,7 +1703,7 @@
               </button>
 
               <button onClick={() => { setInspectedUser(null); setInspectedPost(null); setActiveTab("profile"); }} className={`flex flex-col items-center ${activeTab === 'profile' && !inspectedUser && !inspectedPost ? 'text-pink-500' : 'text-zinc-500'}`}>
-                <img src={player.avatar} className={`w-6 h-6 rounded-full object-cover border ${activeTab === 'profile' && !inspectedUser && !inspectedPost ? 'border-pink-500' : 'border-zinc-700'}`} />
+                <img src={player.avatar} className={`w-6 h-6 rounded-full object-cover border ${activeTab === 'profile' ? 'border-pink-500' : 'border-zinc-700'}`} />
               </button>
             </nav>
 
