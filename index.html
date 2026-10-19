@@ -4,12 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Status Sim - Celebrity & Social RPG</title>
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- React & ReactDOM -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <!-- Babel -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     body { -webkit-tap-highlight-color: transparent; }
@@ -21,14 +18,12 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
+    const { useState, useEffect } = React;
 
-    // Resilient image generator with seed randomization & multi-tier fallbacks
     const getGenerativeImageUrl = (prompt, width = 600, height = 600) => {
       const sanitized = encodeURIComponent(prompt.trim() || "portrait aesthetic person cinematic");
       const randomSeed = Math.floor(Math.random() * 9999999);
-      // Primary Pollinations endpoint with anti-cache query
-      return `https://image.pollinations.ai/prompt/${sanitized}?width=${width}&height=${height}&seed=${randomSeed}&nologo=true&model=flux`;
+      return `https://image.pollinations.ai/prompt/${sanitized}?width=${width}&height=${height}&seed=${randomSeed}&nologo=true`;
     };
 
     const INITIAL_NPCS = [
@@ -41,9 +36,9 @@
         verified: true,
         followers: 4850000,
         following: 340,
-        bio: "Paris / NYC. Creative Director & Runway. Keep up.",
+        bio: "Paris / NYC. Creative Director & Runway.",
         relationship: "Verified Icon (Out of Reach)",
-        disposition: "cold, high-fashion, dismissive",
+        disposition: "cold, high-fashion, elite, blunt",
         posts: [
           {
             id: "p_elena_1",
@@ -51,10 +46,7 @@
             caption: "Fitting day in Marais. Either wear the piece or don't bother.",
             likes: 182400,
             timestamp: "2h ago",
-            comments: [
-              { user: "chloeluxe", text: "THAT SILHOUETTE OMG 🔥", likes: 341 },
-              { user: "marcus_k", text: "Insane fit", likes: 88 }
-            ]
+            comments: [{ user: "chloeluxe", text: "THAT SILHOUETTE 🔥", likes: 341 }]
           }
         ]
       },
@@ -69,18 +61,15 @@
         following: 512,
         bio: "sample chops & 70s soul basslines. debut album soon. 🎹",
         relationship: "Industry Celebrity",
-        disposition: "chill, musical genius, late-night replies",
+        disposition: "chill, artistic, unhinged music takes",
         posts: [
           {
             id: "p_jax_1",
             image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80",
-            caption: "been in the lab for 14 hours straight. 2am Rhodes chords hit different.",
+            caption: "14 hours in the studio. Rhodes chords hit different at 3am.",
             likes: 42100,
             timestamp: "4h ago",
-            comments: [
-              { user: "beatmaker_sam", text: "drop the snippet bro stop gatekeeping", likes: 212 },
-              { user: "vibecheck_daily", text: "unreal setup", likes: 45 }
-            ]
+            comments: [{ user: "beatmaker_sam", text: "drop the snippet bro", likes: 212 }]
           }
         ]
       },
@@ -93,20 +82,17 @@
         verified: false,
         followers: 18200,
         following: 420,
-        bio: "Heavy compounds & meal prep. Stop overthinking progressive overload.",
+        bio: "Heavy compounds & meal prep. Stop overcomplicating progressive overload.",
         relationship: "Gym Bro / Mutual",
         disposition: "hype, honest, direct, zero filter",
         posts: [
           {
             id: "p_trey_1",
             image: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&auto=format&fit=crop&q=80",
-            caption: "495lb rack pull moved like butter. If you're skipping heavy days don't talk to me.",
+            caption: "495lb rack pull moved like butter today.",
             likes: 1204,
             timestamp: "7h ago",
-            comments: [
-              { user: "kyle_pulls", text: "form was clean too damn", likes: 19 },
-              { user: "gymcritic99", text: "hitch at the knees tbh", likes: 4 }
-            ]
+            comments: [{ user: "kyle_pulls", text: "clean pull", likes: 19 }]
           }
         ]
       }
@@ -124,7 +110,7 @@
           verified: false,
           followers: 432,
           following: 410,
-          bio: `hanging out around ${workplace} ☕ film cameras & iced lattes`,
+          bio: `hanging around ${workplace} ☕ film & iced lattes`,
           relationship: "Close Friend / Mutual",
           mutualBadge: `Attends ${workplace}`,
           disposition: "warm, sarcastic, inside jokes",
@@ -139,39 +125,28 @@
           verified: false,
           followers: 612,
           following: 580,
-          bio: `coffee addict at ${workplace}. someone please fix my sleep schedule`,
+          bio: `coffee addict at ${workplace}. broken sleep schedule`,
           relationship: "Friend / Classmate",
           mutualBadge: `Mutual friend with Maya + 3 others`,
           disposition: "casual, goofy, always online",
-          posts: []
-        },
-        {
-          id: "npc_mut_3",
-          name: "Jordan Hayes",
-          handle: "jhayes_99",
-          avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=80",
-          category: "mutual",
-          verified: false,
-          followers: 890,
-          following: 640,
-          bio: "weekend runner | thrifting | photography",
-          relationship: "Situationship / Complicated",
-          mutualBadge: `Works / Studies near ${workplace}`,
-          disposition: "playful, mysterious, leaves ambiguous comments",
           posts: []
         }
       ];
     };
 
     function App() {
+      // Key Pool State: Array of strings stored in localStorage
+      const [apiKeys, setApiKeys] = useState(() => {
+        const saved = localStorage.getItem("status_sim_keys_pool");
+        return saved ? JSON.parse(saved) : [];
+      });
+      const [newKeyInput, setNewKeyInput] = useState("");
+      const [aiStatusMessage, setAiStatusMessage] = useState("");
+
       const [saves, setSaves] = useState(() => {
         const saved = localStorage.getItem("status_sim_multi_saves");
         return saved ? JSON.parse(saved) : {
-          "slot_1": {
-            name: "Main Career",
-            created: new Date().toLocaleDateString(),
-            gameState: null
-          }
+          "slot_1": { name: "Main Career", created: new Date().toLocaleDateString(), gameState: null }
         };
       });
       const [activeSlot, setActiveSlot] = useState("slot_1");
@@ -184,16 +159,16 @@
       const [activeDmUser, setActiveDmUser] = useState(null);
       const [activeTab, setActiveTab] = useState("feed");
 
-      // Onboarding State
+      // Onboarding
       const [onboardingStep, setOnboardingStep] = useState(1);
       const [formName, setFormName] = useState("");
       const [formHandle, setFormHandle] = useState("");
       const [formBio, setFormBio] = useState("");
       const [formAge, setFormAge] = useState("20");
       const [formSchoolWork, setFormSchoolWork] = useState("Ohio State");
-      const [formAspirations, setFormAspirations] = useState("Aspiring Creative & Music Producer");
+      const [formAspirations, setFormAspirations] = useState("Aspiring Creative");
       const [avatarMethod, setAvatarMethod] = useState("ai");
-      const [avatarPrompt, setAvatarPrompt] = useState("vintage aesthetic 20yo person film photography");
+      const [avatarPrompt, setAvatarPrompt] = useState("20yo college guy film photography portrait aesthetic");
       const [avatarUrl, setAvatarUrl] = useState("");
       const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
 
@@ -205,11 +180,11 @@
       const [postVibe, setPostVibe] = useState("Aesthetic Dump");
       const [isGeneratingPostImg, setIsGeneratingPostImg] = useState(false);
 
-      // DM Engine & OpenRouter
+      // DM State
       const [dmMessage, setDmMessage] = useState("");
       const [isSendingDm, setIsSendingDm] = useState(false);
-      const [apiKey, setApiKey] = useState(() => localStorage.getItem("status_sim_openrouter_key") || "");
       const [showSettings, setShowSettings] = useState(false);
+      const [isGeneratingNpcs, setIsGeneratingNpcs] = useState(false);
 
       // Sync active save slot
       useEffect(() => {
@@ -240,10 +215,24 @@
         }
       }, [activeSlot]);
 
-      const handleSaveApiKey = (key) => {
-        setApiKey(key);
-        localStorage.setItem("status_sim_openrouter_key", key);
-        alert("API Key saved securely to your browser!");
+      // Add a single key to the pool
+      const handleAddKey = () => {
+        const trimmed = newKeyInput.trim();
+        if (!trimmed) return;
+        if (apiKeys.includes(trimmed)) {
+          alert("Key already added!");
+          return;
+        }
+        const updated = [...apiKeys, trimmed];
+        setApiKeys(updated);
+        localStorage.setItem("status_sim_keys_pool", JSON.stringify(updated));
+        setNewKeyInput("");
+      };
+
+      const handleRemoveKey = (index) => {
+        const updated = apiKeys.filter((_, idx) => idx !== index);
+        setApiKeys(updated);
+        localStorage.setItem("status_sim_keys_pool", JSON.stringify(updated));
       };
 
       // Resilient Avatar Fetch
@@ -257,9 +246,7 @@
           setIsGeneratingAvatar(false);
         };
         img.onerror = () => {
-          // Fallback to random unsplash avatar if external network blocks
-          const fallback = `https://images.unsplash.com/photo-${1534528741775 + Math.floor(Math.random() * 50)}?w=400&auto=format&fit=crop&q=80`;
-          setAvatarUrl(fallback);
+          setAvatarUrl(`https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80`);
           setIsGeneratingAvatar(false);
         };
       };
@@ -325,7 +312,7 @@
             const introMsg = {
               id: "dm_" + Date.now(),
               sender: "npc",
-              text: `saw you made an account! how is ${player.schoolWork} going?`,
+              text: `saw you made an account! how's ${player.schoolWork} going?`,
               timestamp: "Just now"
             };
             setDms(prev => ({
@@ -334,6 +321,88 @@
             }));
           }, 2500);
         }
+      };
+
+      // Generate New AI Characters On Demand
+      const handleGenerateMoreAiNpcs = async () => {
+        setIsGeneratingNpcs(true);
+        setAiStatusMessage("Spawning new personas via AI...");
+
+        let generatedProfiles = null;
+
+        // Try using an active key if present
+        if (apiKeys.length > 0) {
+          for (const key of apiKeys) {
+            try {
+              const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                  "Authorization": `Bearer ${key.trim()}`,
+                  "Content-Type": "application/json",
+                  "HTTP-Referer": window.location.origin,
+                  "X-Title": "Status Sim"
+                },
+                body: JSON.stringify({
+                  model: "openrouter/free",
+                  messages: [
+                    {
+                      role: "system",
+                      content: `Generate 2 realistic everyday social media profiles for peers near ${player.schoolWork}. Return ONLY valid JSON array with keys: name, handle, bio, disposition, relationship, photo_prompt. No markdown formatting, just the raw JSON.`
+                    }
+                  ]
+                })
+              });
+
+              if (res.ok) {
+                const data = await res.json();
+                const content = data.choices[0]?.message?.content;
+                const clean = content.replace(/```json/g, '').replace(/```/g, '').trim();
+                generatedProfiles = JSON.parse(clean);
+                break;
+              }
+            } catch (err) {
+              console.warn("Key error on generation, trying next...");
+            }
+          }
+        }
+
+        // Fallback procedural generator if keys fail or are absent
+        if (!generatedProfiles || !Array.isArray(generatedProfiles)) {
+          const names = ["Marcus Bell", "Chloe Bennett", "Kai Thorne", "Zoe Vance"];
+          const picked = names[Math.floor(Math.random() * names.length)];
+          generatedProfiles = [
+            {
+              name: picked,
+              handle: picked.toLowerCase().replace(" ", "_"),
+              bio: `local around ${player.schoolWork} | late night photography`,
+              disposition: "chill, artistic, dry humor",
+              relationship: "Mutual Acquaintance",
+              photo_prompt: "young aesthetic college student portrait film 35mm"
+            }
+          ];
+        }
+
+        const formatted = generatedProfiles.map((p, idx) => ({
+          id: "npc_gen_" + Date.now() + "_" + idx,
+          name: p.name,
+          handle: p.handle.toLowerCase().replace(/[^a-z0-9_]/g, ""),
+          avatar: getGenerativeImageUrl(p.photo_prompt || "portrait aesthetic person", 300, 300),
+          category: "mutual",
+          verified: false,
+          followers: Math.floor(Math.random() * 800) + 200,
+          following: Math.floor(Math.random() * 600) + 150,
+          bio: p.bio,
+          relationship: p.relationship || "Suggested Connection",
+          mutualBadge: `Around ${player.schoolWork}`,
+          disposition: p.disposition,
+          posts: []
+        }));
+
+        setNpcs(prev => [...formatted, ...prev]);
+        setSuggestedFollows(prev => [...formatted, ...prev]);
+        setIsGeneratingNpcs(false);
+        setAiStatusMessage("New profiles generated!");
+        setTimeout(() => setAiStatusMessage(""), 3000);
       };
 
       // Resilient Post Image Generation
@@ -430,7 +499,7 @@
         setActiveTab("feed");
       };
 
-      // OpenRouter or Heuristic DM Handler
+      // Multi-Key Failover DM Sender
       const handleSendDm = async (targetNpc) => {
         if (!dmMessage.trim() || isSendingDm) return;
 
@@ -447,56 +516,69 @@
         setDmMessage("");
         setIsSendingDm(true);
 
-        // If OpenRouter API Key is supplied, call free LLM endpoint
-        if (apiKey.trim()) {
-          try {
-            const systemPrompt = `You are ${targetNpc.name} (@${targetNpc.handle}) in an Instagram/social simulator. Your bio: "${targetNpc.bio}". Your relationship to the player: "${targetNpc.relationship}". Your personality: "${targetNpc.disposition}". You are texting back via Instagram DMs. Keep your response casual, authentic, realistic to internet texting, under 25 words. Do not break character.`;
+        let aiGeneratedResponse = null;
 
-            const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-              method: "POST",
-              headers: {
-                "Authorization": `Bearer ${apiKey.trim()}`,
-                "Content-Type": "application/json",
-                "HTTP-Referer": window.location.origin,
-                "X-Title": "Status Sim"
-              },
-              body: JSON.stringify({
-                model: "meta-llama/llama-3.3-70b-instruct:free",
-                messages: [
-                  { role: "system", content: systemPrompt },
-                  { role: "user", content: userMsgText }
-                ]
-              })
-            });
+        // Iterate through stacked keys if available
+        if (apiKeys.length > 0) {
+          for (let i = 0; i < apiKeys.length; i++) {
+            const currentKey = apiKeys[i].trim();
+            try {
+              const systemPrompt = `You are ${targetNpc.name} (@${targetNpc.handle}) in an unfiltered Instagram simulator. Your bio: "${targetNpc.bio}". Your relationship to the player: "${targetNpc.relationship}". Your personality: "${targetNpc.disposition}". You are texting back via Instagram DMs. Respond naturally in authentic internet slang/texting, lowercase often, under 25 words. Don't be robotic.`;
 
-            if (res.ok) {
-              const data = await res.json();
-              const reply = data.choices[0]?.message?.content?.trim();
-              if (reply) {
-                setDms(prev => ({
-                  ...prev,
-                  [targetNpc.handle]: [...(prev[targetNpc.handle] || []), {
-                    id: "dm_npc_" + Date.now(),
-                    sender: "npc",
-                    text: reply,
-                    timestamp: "Just now"
-                  }]
-                }));
-                setIsSendingDm(false);
-                return;
+              const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                  "Authorization": `Bearer ${currentKey}`,
+                  "Content-Type": "application/json",
+                  "HTTP-Referer": window.location.origin,
+                  "X-Title": "Status Sim"
+                },
+                body: JSON.stringify({
+                  model: "openrouter/free",
+                  messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userMsgText }
+                  ]
+                })
+              });
+
+              if (res.ok) {
+                const data = await res.json();
+                const reply = data.choices[0]?.message?.content?.trim();
+                if (reply) {
+                  aiGeneratedResponse = reply;
+                  break; // Successful generation
+                }
               }
+            } catch (err) {
+              console.warn(`Key #${i + 1} failed, rolling to next...`);
             }
-          } catch (e) {
-            console.warn("OpenRouter fetch error, falling back to heuristic engine.");
           }
         }
 
-        // Offline Heuristic Engine Fallback
+        if (aiGeneratedResponse) {
+          setDms(prev => ({
+            ...prev,
+            [targetNpc.handle]: [
+              ...(prev[targetNpc.handle] || []),
+              {
+                id: "dm_npc_" + Date.now(),
+                sender: "npc",
+                text: aiGeneratedResponse,
+                timestamp: "Just now"
+              }
+            ]
+          }));
+          setIsSendingDm(false);
+          return;
+        }
+
+        // Offline Heuristic Fallback if no keys work
         setTimeout(() => {
           let replyText = "Seen";
           if (targetNpc.verified && player.followers < 10000) {
             setIsSendingDm(false);
-            return; // Out of reach celebs don't reply
+            return;
           }
 
           if (targetNpc.category === "mutual") {
@@ -510,12 +592,15 @@
 
           setDms(prev => ({
             ...prev,
-            [targetNpc.handle]: [...(prev[targetNpc.handle] || []), {
-              id: "dm_npc_" + Date.now(),
-              sender: "npc",
-              text: replyText,
-              timestamp: "Just now"
-            }]
+            [targetNpc.handle]: [
+              ...(prev[targetNpc.handle] || []),
+              {
+                id: "dm_npc_" + Date.now(),
+                sender: "npc",
+                text: replyText,
+                timestamp: "Just now"
+              }
+            ]
           }));
           setIsSendingDm(false);
         }, 1000);
@@ -537,11 +622,16 @@
         localStorage.setItem("status_sim_multi_saves", JSON.stringify(newSaves));
       };
 
+      // Export saves AND keys so you can sync to your phone in 1 click
       const handleExportSave = () => {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(saves));
+        const exportBundle = {
+          saves: saves,
+          keys: apiKeys
+        };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportBundle));
         const a = document.createElement("a");
         a.href = dataStr;
-        a.download = `status_sim_backup_${Date.now()}.json`;
+        a.download = `status_sim_sync_${Date.now()}.json`;
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -554,21 +644,25 @@
           reader.onload = (event) => {
             try {
               const imported = JSON.parse(event.target.result);
-              setSaves(imported);
-              setActiveSlot(Object.keys(imported)[0]);
-              localStorage.setItem("status_sim_multi_saves", JSON.stringify(imported));
-              alert("Save file imported!");
+              if (imported.saves) {
+                setSaves(imported.saves);
+                localStorage.setItem("status_sim_multi_saves", JSON.stringify(imported.saves));
+                setActiveSlot(Object.keys(imported.saves)[0]);
+              }
+              if (imported.keys) {
+                setApiKeys(imported.keys);
+                localStorage.setItem("status_sim_keys_pool", JSON.stringify(imported.keys));
+              }
+              alert("Game progress and stacked API keys imported successfully!");
             } catch (err) {
-              alert("Invalid JSON file.");
+              alert("Invalid JSON sync file.");
             }
           };
           reader.readAsText(file);
         }
       };
 
-      // ==========================================
-      // ONBOARDING VIEW
-      // ==========================================
+      // ONBOARDING
       if (!player) {
         return (
           <div className="min-h-screen bg-zinc-950 flex flex-col justify-center items-center p-4">
@@ -744,9 +838,7 @@
         );
       }
 
-      // ==========================================
       // ONBOARDING STEP 3 (SUGGESTED FOLLOWS)
-      // ==========================================
       if (onboardingStep === 3) {
         return (
           <div className="min-h-screen bg-zinc-950 flex flex-col justify-center items-center p-4">
@@ -795,9 +887,7 @@
         );
       }
 
-      // ==========================================
       // MAIN APP SHELL
-      // ==========================================
       return (
         <div className="min-h-screen bg-black text-zinc-100 flex justify-center">
           <div className="w-full max-w-md bg-zinc-950 border-x border-zinc-800/60 min-h-screen flex flex-col pb-20">
@@ -809,22 +899,28 @@
                 <span className="text-[10px] font-mono uppercase bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-400">
                   {saves[activeSlot]?.name || "Slot"}
                 </span>
+                {apiKeys.length > 0 && (
+                  <span className="text-[9px] bg-green-500/20 text-green-400 border border-green-500/30 px-1.5 py-0.5 rounded font-mono">
+                    {apiKeys.length} Keys Active
+                  </span>
+                )}
               </div>
               <button onClick={() => setShowSettings(!showSettings)} className="text-zinc-400 hover:text-white p-1">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
               </button>
             </header>
 
-            {/* SETTINGS DRAWER */}
+            {/* SETTINGS / KEYS DRAWER */}
             {showSettings && (
               <div className="bg-zinc-900 border-b border-zinc-800 p-4 space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xs font-bold text-white uppercase tracking-wider">Save Slots & OpenRouter Key</h3>
+                  <h3 className="text-xs font-bold text-white uppercase tracking-wider">Save Slots & Stacked API Keys</h3>
                   <button onClick={() => setShowSettings(false)} className="text-xs text-zinc-400">✕</button>
                 </div>
                 
+                {/* Save Slots */}
                 <div className="space-y-2">
-                  <label className="text-xs text-zinc-400">Save Slots:</label>
+                  <label className="text-xs text-zinc-400">Active Game Slot:</label>
                   <div className="grid grid-cols-2 gap-2">
                     {Object.keys(saves).map(slotKey => (
                       <button 
@@ -839,26 +935,44 @@
                   </div>
                   <div className="flex gap-2 pt-1">
                     <button onClick={handleCreateNewSlot} className="flex-1 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-xs text-white rounded">+ New Slot</button>
-                    <button onClick={handleExportSave} className="py-1.5 px-3 bg-zinc-800 hover:bg-zinc-700 text-xs text-zinc-300 rounded">Export</button>
+                    <button onClick={handleExportSave} className="py-1.5 px-3 bg-zinc-800 hover:bg-zinc-700 text-xs text-zinc-300 rounded">Export All</button>
                     <label className="py-1.5 px-3 bg-zinc-800 hover:bg-zinc-700 text-xs text-zinc-300 rounded cursor-pointer">
                       Import <input type="file" accept=".json" onChange={handleImportSave} className="hidden" />
                     </label>
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-zinc-800">
-                  <label className="text-xs text-zinc-400">OpenRouter API Key (Optional)</label>
-                  <div className="flex gap-2 mt-1">
+                {/* Single-Key Stacking Box */}
+                <div className="pt-2 border-t border-zinc-800 space-y-2">
+                  <label className="text-xs text-zinc-400 font-semibold">Stack API Keys (OpenRouter, etc.)</label>
+                  <div className="flex gap-2">
                     <input 
                       type="password"
-                      placeholder="sk-or-v1-..."
-                      defaultValue={apiKey}
-                      onChange={e => setApiKey(e.target.value)}
-                      className="flex-1 bg-zinc-950 border border-zinc-800 rounded px-2 py-1 text-xs text-white"
+                      placeholder="Paste single key here (sk-or-v1-...)"
+                      value={newKeyInput}
+                      onChange={e => setNewKeyInput(e.target.value)}
+                      className="flex-1 bg-zinc-950 border border-zinc-800 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-pink-500"
                     />
-                    <button onClick={() => handleSaveApiKey(apiKey)} className="px-3 bg-pink-600 text-xs font-semibold rounded text-white">Save</button>
+                    <button onClick={handleAddKey} className="px-3 bg-pink-600 hover:bg-pink-500 text-xs font-bold rounded text-white">
+                      Add Key
+                    </button>
                   </div>
-                  <p className="text-[10px] text-zinc-500 mt-1">Key stays stored safely in your own browser's storage.</p>
+
+                  {/* List of stacked keys */}
+                  <div className="space-y-1 pt-1">
+                    {apiKeys.length === 0 ? (
+                      <div className="text-[11px] text-zinc-500 italic">No keys stacked. Using offline dialogue mode.</div>
+                    ) : (
+                      apiKeys.map((k, index) => (
+                        <div key={index} className="flex items-center justify-between bg-zinc-950 px-2.5 py-1.5 rounded border border-zinc-800 text-[11px]">
+                          <span className="font-mono text-zinc-300 truncate max-w-[240px]">
+                            Key #{index + 1}: {k.slice(0, 10)}...{k.slice(-4)}
+                          </span>
+                          <button onClick={() => handleRemoveKey(index)} className="text-red-400 hover:text-red-300 font-bold ml-2">✕</button>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -945,6 +1059,59 @@
                 </div>
               )}
 
+              {/* DISCOVER & SPAWN MORE AI NPCS */}
+              {activeTab === "discover" && (
+                <div className="p-4 space-y-4">
+                  <div className="flex justify-between items-center border-b border-zinc-800 pb-3">
+                    <div>
+                      <h2 className="text-sm font-bold uppercase tracking-wider text-white">Suggested Connections</h2>
+                      <p className="text-[11px] text-zinc-400">People around {player.schoolWork}</p>
+                    </div>
+                    <button 
+                      onClick={handleGenerateMoreAiNpcs} 
+                      disabled={isGeneratingNpcs}
+                      className="px-3 py-1.5 bg-pink-600 hover:bg-pink-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1"
+                    >
+                      {isGeneratingNpcs ? "Spawning..." : "✨ Generate AI Users"}
+                    </button>
+                  </div>
+
+                  {aiStatusMessage && (
+                    <div className="p-2 bg-pink-500/10 border border-pink-500/30 rounded text-center text-xs text-pink-400 font-medium">
+                      {aiStatusMessage}
+                    </div>
+                  )}
+
+                  <div className="space-y-3">
+                    {npcs.map(user => {
+                      const isFollowing = player.followingList?.includes(user.id);
+                      return (
+                        <div key={user.id} className="flex items-center justify-between p-3 bg-zinc-900/60 rounded-xl border border-zinc-800">
+                          <div className="flex items-center gap-3">
+                            <img src={user.avatar} className="w-12 h-12 rounded-full object-cover border border-zinc-800" />
+                            <div>
+                              <div className="text-xs font-bold text-white flex items-center gap-1">
+                                {user.name}
+                                {user.verified && <span className="text-blue-400 text-xs">✓</span>}
+                              </div>
+                              <div className="text-[11px] text-zinc-500">@{user.handle}</div>
+                              <div className="text-[10px] text-zinc-400 mt-0.5 line-clamp-1">{user.bio}</div>
+                              <div className="text-[10px] text-pink-400 font-medium mt-0.5">{user.relationship}</div>
+                            </div>
+                          </div>
+                          <button 
+                            onClick={() => handleFollow(user)}
+                            className={`text-xs px-3 py-1.5 rounded-lg font-medium transition ${isFollowing ? 'bg-zinc-800 text-zinc-400' : 'bg-pink-600 text-white font-bold'}`}
+                          >
+                            {isFollowing ? "Following" : "Follow"}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* CREATE POST */}
               {activeTab === "create" && (
                 <div className="p-4 space-y-4">
@@ -990,7 +1157,7 @@
                         disabled={isGeneratingPostImg}
                         className="w-full py-2 bg-zinc-900 hover:bg-zinc-800 text-xs text-pink-400 font-semibold rounded-lg border border-pink-500/30 transition"
                       >
-                        {isGeneratingPostImg ? "Generating with Flux AI..." : "✨ Generate Photo"}
+                        {isGeneratingPostImg ? "Generating with Pollinations AI..." : "✨ Generate Photo"}
                       </button>
                     </div>
                   )}
@@ -1076,6 +1243,11 @@
                             <div className="text-[10px] text-pink-400">{activeDmUser.relationship}</div>
                           </div>
                         </div>
+                        {apiKeys.length > 0 && (
+                          <span className="text-[9px] bg-pink-500/20 text-pink-400 border border-pink-500/30 px-1.5 py-0.5 rounded font-mono">
+                            AI Active
+                          </span>
+                        )}
                       </div>
 
                       <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
@@ -1096,7 +1268,7 @@
                           ))
                         )}
                         {isSendingDm && (
-                          <div className="text-xs text-zinc-500 italic">Typing...</div>
+                          <div className="text-xs text-pink-400 animate-pulse">Typing real-time AI response...</div>
                         )}
                       </div>
 
@@ -1217,7 +1389,7 @@
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path></svg>
               </button>
 
-              <button onClick={() => setOnboardingStep(3)} className="flex flex-col items-center text-zinc-500 hover:text-white">
+              <button onClick={() => setActiveTab("discover")} className={`flex flex-col items-center ${activeTab === 'discover' ? 'text-pink-500' : 'text-zinc-500'}`}>
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
               </button>
 
