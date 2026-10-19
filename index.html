@@ -20,7 +20,6 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
-    // Strict Gender & Demographic Photo Generator using Flux Model
     const getStrictAvatarUrl = ({ gender = "guy", age = "20", ethnicity = "", style = "casual collegiate", seed = 12345 }) => {
       const genderTerm = gender.toLowerCase() === "guy" || gender.toLowerCase() === "male" 
         ? "handsome young man, male facial features, masculine jawline, short clean haircut, athletic build"
@@ -37,7 +36,6 @@
       return `https://image.pollinations.ai/prompt/${cleanPrompt}?width=${width}&height=${height}&seed=${seed}&nologo=true&model=flux`;
     };
 
-    // Seeded NPC Dataset with Strict Genders and Curated Photos
     const INITIAL_NPCS = [
       {
         id: "npc_1",
@@ -202,13 +200,13 @@
       const [inspectedPost, setInspectedPost] = useState(null);
       const [postCommentInput, setPostCommentInput] = useState("");
 
-      // Onboarding with Explicit Gender & Visual Spec
+      // Onboarding
       const [onboardingStep, setOnboardingStep] = useState(1);
       const [formName, setFormName] = useState("");
       const [formHandle, setFormHandle] = useState("");
       const [formBio, setFormBio] = useState("");
       const [formAge, setFormAge] = useState("20");
-      const [formGender, setFormGender] = useState("Guy"); // Guy, Girl, Non-binary
+      const [formGender, setFormGender] = useState("Guy");
       const [formSchoolWork, setFormSchoolWork] = useState("Ohio State");
       const [formAspirations, setFormAspirations] = useState("Aspiring Creative");
       const [avatarMethod, setAvatarMethod] = useState("ai");
@@ -276,7 +274,6 @@
         localStorage.setItem("status_sim_keys_pool", JSON.stringify(updated));
       };
 
-      // Strict Demographic Avatar Generation
       const handleGenerateAiAvatar = () => {
         setIsGeneratingAvatar(true);
         const url = getStrictAvatarUrl({
@@ -292,7 +289,6 @@
           setIsGeneratingAvatar(false);
         };
         img.onerror = () => {
-          // Guaranteed fallback photo matching selected gender
           const fallback = formGender === "Guy"
             ? "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80"
             : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80";
@@ -317,7 +313,7 @@
 
         const finalAvatar = avatarUrl || defaultFallback;
         const newPlayer = {
-          name: formName || (formGender === "Guy" ? "Jordan Rivers" : "Jordan Rivers"),
+          name: formName || "Jordan Rivers",
           handle: (formHandle || "jordanrivers").toLowerCase().replace(/[^a-z0-9_]/g, ""),
           gender: formGender,
           avatar: finalAvatar,
@@ -437,45 +433,61 @@
         }, 1800);
       };
 
-      // Generate AI NPCs with Gender-Consistent Anchoring
       const handleGenerateMoreAiNpcs = async () => {
         setIsGeneratingNpcs(true);
-        setAiStatusMessage("Spawning new personas via AI...");
+        setAiStatusMessage("Spawning personas via AI...");
 
         let generatedProfiles = null;
+        const FREE_MODELS = [
+          "meta-llama/llama-3.3-70b-instruct:free",
+          "google/gemini-2.0-flash-exp:free",
+          "mistralai/mistral-7b-instruct:free"
+        ];
 
         if (apiKeys.length > 0) {
           for (const key of apiKeys) {
-            try {
-              const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                  "Authorization": `Bearer ${key.trim()}`,
-                  "Content-Type": "application/json",
-                  "HTTP-Referer": window.location.origin,
-                  "X-Title": "Status Sim"
-                },
-                body: JSON.stringify({
-                  model: "openrouter/free",
-                  messages: [
-                    {
-                      role: "system",
-                      content: `Generate 2 realistic social profiles for college peers near ${player.schoolWork}. Return ONLY valid JSON array with keys: name, handle, gender (strictly "male" or "female"), age, bio, disposition, relationship. No markdown formatting.`
-                    }
-                  ]
-                })
-              });
+            const currentKey = key.trim();
+            const isGroq = currentKey.startsWith("gsk_");
+            const endpoint = isGroq 
+              ? "https://api.groq.com/openai/v1/chat/completions"
+              : "https://openrouter.ai/api/v1/chat/completions";
+            const candidateModels = isGroq ? ["llama-3.3-70b-versatile"] : FREE_MODELS;
 
-              if (res.ok) {
-                const data = await res.json();
-                const content = data.choices[0]?.message?.content;
-                const clean = content.replace(/```json/g, '').replace(/```/g, '').trim();
-                generatedProfiles = JSON.parse(clean);
-                break;
+            for (const modelName of candidateModels) {
+              try {
+                const res = await fetch(endpoint, {
+                  method: "POST",
+                  headers: {
+                    "Authorization": `Bearer ${currentKey}`,
+                    "Content-Type": "application/json",
+                    ...(isGroq ? {} : {
+                      "HTTP-Referer": window.location.origin || "https://status-sim.local",
+                      "X-Title": "Status Sim"
+                    })
+                  },
+                  body: JSON.stringify({
+                    model: modelName,
+                    messages: [
+                      {
+                        role: "system",
+                        content: `Generate 2 realistic social media profiles for college peers near ${player.schoolWork}. Return ONLY valid JSON array with keys: name, handle, gender ("male" or "female"), age, bio, disposition, relationship. No markdown formatting.`
+                      }
+                    ]
+                  })
+                });
+
+                if (res.ok) {
+                  const data = await res.json();
+                  const content = data.choices[0]?.message?.content;
+                  const clean = content.replace(/```json/g, '').replace(/```/g, '').trim();
+                  generatedProfiles = JSON.parse(clean);
+                  break;
+                }
+              } catch (err) {
+                // roll next
               }
-            } catch (err) {
-              console.warn("Key error, trying next...");
             }
+            if (generatedProfiles) break;
           }
         }
 
@@ -656,40 +668,61 @@
 
         let aiGeneratedResponse = null;
 
+        const FREE_MODELS = [
+          "meta-llama/llama-3.3-70b-instruct:free",
+          "google/gemini-2.0-flash-exp:free",
+          "mistralai/mistral-7b-instruct:free"
+        ];
+
         if (apiKeys.length > 0) {
-          for (let i = 0; i < apiKeys.length; i++) {
-            const currentKey = apiKeys[i].trim();
-            try {
-              const systemPrompt = `You are ${targetNpc.name} (@${targetNpc.handle}) in an unfiltered Instagram simulator. You are a ${targetNpc.gender || 'person'}. Bio: "${targetNpc.bio}". Relationship: "${targetNpc.relationship}". Personality: "${targetNpc.disposition}". You are texting back via Instagram DMs. Respond in authentic internet texting, lowercase often, under 25 words. Don't be robotic.`;
+          for (let k = 0; k < apiKeys.length; k++) {
+            const currentKey = apiKeys[k].trim();
+            const isGroq = currentKey.startsWith("gsk_");
+            const endpoint = isGroq 
+              ? "https://api.groq.com/openai/v1/chat/completions"
+              : "https://openrouter.ai/api/v1/chat/completions";
 
-              const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                  "Authorization": `Bearer ${currentKey}`,
-                  "Content-Type": "application/json",
-                  "HTTP-Referer": window.location.origin,
-                  "X-Title": "Status Sim"
-                },
-                body: JSON.stringify({
-                  model: "openrouter/free",
-                  messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: userMsgText }
-                  ]
-                })
-              });
+            const systemPrompt = `You are ${targetNpc.name} (@${targetNpc.handle}) in an unfiltered Instagram social media simulator. You are a ${targetNpc.gender || 'person'}. Bio: "${targetNpc.bio}". Relationship to user: "${targetNpc.relationship}". Tone/Disposition: "${targetNpc.disposition}". Respond to the user's direct message casually, using realistic internet texting, lowercase often, under 25 words. Never reveal you are an AI.`;
 
-              if (res.ok) {
-                const data = await res.json();
-                const reply = data.choices[0]?.message?.content?.trim();
-                if (reply) {
-                  aiGeneratedResponse = reply;
-                  break;
+            const candidateModels = isGroq ? ["llama-3.3-70b-versatile"] : FREE_MODELS;
+
+            for (let m = 0; m < candidateModels.length; m++) {
+              try {
+                const res = await fetch(endpoint, {
+                  method: "POST",
+                  headers: {
+                    "Authorization": `Bearer ${currentKey}`,
+                    "Content-Type": "application/json",
+                    ...(isGroq ? {} : {
+                      "HTTP-Referer": window.location.origin || "https://status-sim.local",
+                      "X-Title": "Status Sim"
+                    })
+                  },
+                  body: JSON.stringify({
+                    model: candidateModels[m],
+                    messages: [
+                      { role: "system", content: systemPrompt },
+                      { role: "user", content: userMsgText }
+                    ],
+                    temperature: 0.85,
+                    max_tokens: 60
+                  })
+                });
+
+                if (res.ok) {
+                  const data = await res.json();
+                  const reply = data.choices?.[0]?.message?.content?.trim();
+                  if (reply) {
+                    aiGeneratedResponse = reply;
+                    break;
+                  }
                 }
+              } catch (netErr) {
+                // Try next
               }
-            } catch (err) {
-              console.warn(`Key failed, rolling...`);
             }
+
+            if (aiGeneratedResponse) break;
           }
         }
 
@@ -837,7 +870,6 @@
                     </div>
                   </div>
 
-                  {/* Gender Selector for Strict Avatar Consistency */}
                   <div>
                     <label className="text-xs font-medium text-zinc-300">Gender (Locks portrait accuracy)</label>
                     <div className="grid grid-cols-2 gap-2 mt-1">
@@ -1106,7 +1138,7 @@
                   <div className="flex gap-2">
                     <input 
                       type="password"
-                      placeholder="Paste key (sk-or-v1-...)"
+                      placeholder="Paste key (sk-or-v1-... or gsk_...)"
                       value={newKeyInput}
                       onChange={e => setNewKeyInput(e.target.value)}
                       className="flex-1 bg-zinc-950 border border-zinc-800 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-pink-500"
@@ -1703,7 +1735,7 @@
               </button>
 
               <button onClick={() => { setInspectedUser(null); setInspectedPost(null); setActiveTab("profile"); }} className={`flex flex-col items-center ${activeTab === 'profile' && !inspectedUser && !inspectedPost ? 'text-pink-500' : 'text-zinc-500'}`}>
-                <img src={player.avatar} className={`w-6 h-6 rounded-full object-cover border ${activeTab === 'profile' ? 'border-pink-500' : 'border-zinc-700'}`} />
+                <img src={player.avatar} className={`w-6 h-6 rounded-full object-cover border ${activeTab === 'profile' && !inspectedUser && !inspectedPost ? 'border-pink-500' : 'border-zinc-700'}`} />
               </button>
             </nav>
 
