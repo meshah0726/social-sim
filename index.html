@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Status Sim - Celebrity & Social RPG</title>
+  <title>Status Sim - Social RPG</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
@@ -31,12 +31,12 @@
         id: "npc_1",
         name: "Elena Vance",
         handle: "elenavance",
-        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80",
         category: "fashion",
         verified: true,
         followers: 4850000,
         following: 340,
-        bio: "Paris / NYC. Creative Director & Runway.",
+        bio: "Paris / NYC. Creative Director & Runway. Keep up.",
         relationship: "Verified Icon (Out of Reach)",
         disposition: "cold, high-fashion, elite, blunt",
         posts: [
@@ -45,8 +45,18 @@
             image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=80",
             caption: "Fitting day in Marais. Either wear the piece or don't bother.",
             likes: 182400,
+            likedByPlayer: false,
             timestamp: "2h ago",
-            comments: [{ user: "chloeluxe", text: "THAT SILHOUETTE 🔥", likes: 341 }]
+            comments: [{ id: "c1", user: "chloeluxe", text: "THAT SILHOUETTE 🔥", likes: 341 }]
+          },
+          {
+            id: "p_elena_2",
+            image: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&auto=format&fit=crop&q=80",
+            caption: "Backstage mood. No photos unless approved.",
+            likes: 94100,
+            likedByPlayer: false,
+            timestamp: "1d ago",
+            comments: [{ id: "c2", user: "vogue_daily", text: "flawless", likes: 88 }]
           }
         ]
       },
@@ -54,7 +64,7 @@
         id: "npc_2",
         name: "Jaxson Cole",
         handle: "jaxsoncole",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80",
         category: "musicians",
         verified: true,
         followers: 1240000,
@@ -68,8 +78,18 @@
             image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80",
             caption: "14 hours in the studio. Rhodes chords hit different at 3am.",
             likes: 42100,
+            likedByPlayer: false,
             timestamp: "4h ago",
-            comments: [{ user: "beatmaker_sam", text: "drop the snippet bro", likes: 212 }]
+            comments: [{ id: "c3", user: "beatmaker_sam", text: "drop the snippet bro", likes: 212 }]
+          },
+          {
+            id: "p_jax_2",
+            image: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80",
+            caption: "vinyl digging in Tokyo. found some rare 1974 funk gems.",
+            likes: 31200,
+            likedByPlayer: false,
+            timestamp: "3d ago",
+            comments: [{ id: "c4", user: "audiophile99", text: "holy grail", likes: 54 }]
           }
         ]
       },
@@ -77,7 +97,7 @@
         id: "npc_3",
         name: "Trey Jenkins",
         handle: "trey_iron",
-        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&auto=format&fit=crop&q=80",
         category: "gym",
         verified: false,
         followers: 18200,
@@ -89,10 +109,11 @@
           {
             id: "p_trey_1",
             image: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&auto=format&fit=crop&q=80",
-            caption: "495lb rack pull moved like butter today.",
+            caption: "495lb rack pull moved like butter today. lock in.",
             likes: 1204,
+            likedByPlayer: false,
             timestamp: "7h ago",
-            comments: [{ user: "kyle_pulls", text: "clean pull", likes: 19 }]
+            comments: [{ id: "c5", user: "kyle_pulls", text: "clean pull", likes: 19 }]
           }
         ]
       }
@@ -105,7 +126,7 @@
           id: "npc_mut_1",
           name: "Maya Chen",
           handle: "mayac",
-          avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80",
+          avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=300&auto=format&fit=crop&q=80",
           category: "mutual",
           verified: false,
           followers: 432,
@@ -114,13 +135,23 @@
           relationship: "Close Friend / Mutual",
           mutualBadge: `Attends ${workplace}`,
           disposition: "warm, sarcastic, inside jokes",
-          posts: []
+          posts: [
+            {
+              id: "p_maya_1",
+              image: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&auto=format&fit=crop&q=80",
+              caption: "weekend study sessions that turned into 3 hours of gossiping 🍵",
+              likes: 112,
+              likedByPlayer: false,
+              timestamp: "5h ago",
+              comments: [{ id: "cm1", user: "alexrivers", text: "accurate as always", likes: 4 }]
+            }
+          ]
         },
         {
           id: "npc_mut_2",
           name: "Alex Rivera",
           handle: "alexrivers",
-          avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80",
+          avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=300&auto=format&fit=crop&q=80",
           category: "mutual",
           verified: false,
           followers: 612,
@@ -129,13 +160,23 @@
           relationship: "Friend / Classmate",
           mutualBadge: `Mutual friend with Maya + 3 others`,
           disposition: "casual, goofy, always online",
-          posts: []
+          posts: [
+            {
+              id: "p_alex_1",
+              image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600&auto=format&fit=crop&q=80",
+              caption: "running on 2 hours of sleep and pure optimism",
+              likes: 89,
+              likedByPlayer: false,
+              timestamp: "1d ago",
+              comments: [{ id: "ca1", user: "mayac", text: "go to bed lol", likes: 12 }]
+            }
+          ]
         }
       ];
     };
 
     function App() {
-      // Key Pool State: Array of strings stored in localStorage
+      // Key Pool State
       const [apiKeys, setApiKeys] = useState(() => {
         const saved = localStorage.getItem("status_sim_keys_pool");
         return saved ? JSON.parse(saved) : [];
@@ -143,6 +184,7 @@
       const [newKeyInput, setNewKeyInput] = useState("");
       const [aiStatusMessage, setAiStatusMessage] = useState("");
 
+      // Save Slots
       const [saves, setSaves] = useState(() => {
         const saved = localStorage.getItem("status_sim_multi_saves");
         return saved ? JSON.parse(saved) : {
@@ -151,6 +193,7 @@
       });
       const [activeSlot, setActiveSlot] = useState("slot_1");
 
+      // Game Data
       const [player, setPlayer] = useState(null);
       const [feed, setFeed] = useState([]);
       const [npcs, setNpcs] = useState([]);
@@ -158,6 +201,11 @@
       const [dms, setDms] = useState({});
       const [activeDmUser, setActiveDmUser] = useState(null);
       const [activeTab, setActiveTab] = useState("feed");
+
+      // Inspection Navigation
+      const [inspectedUser, setInspectedUser] = useState(null);
+      const [inspectedPost, setInspectedPost] = useState(null);
+      const [postCommentInput, setPostCommentInput] = useState("");
 
       // Onboarding
       const [onboardingStep, setOnboardingStep] = useState(1);
@@ -186,7 +234,7 @@
       const [showSettings, setShowSettings] = useState(false);
       const [isGeneratingNpcs, setIsGeneratingNpcs] = useState(false);
 
-      // Sync active save slot
+      // Sync active save
       useEffect(() => {
         if (player) {
           const updatedSaves = {
@@ -201,7 +249,7 @@
         }
       }, [player, feed, npcs, dms]);
 
-      // Load active slot data
+      // Load active slot
       useEffect(() => {
         const slotData = saves[activeSlot];
         if (slotData && slotData.gameState) {
@@ -215,7 +263,7 @@
         }
       }, [activeSlot]);
 
-      // Add a single key to the pool
+      // Add a single key to pool
       const handleAddKey = () => {
         const trimmed = newKeyInput.trim();
         if (!trimmed) return;
@@ -235,7 +283,6 @@
         localStorage.setItem("status_sim_keys_pool", JSON.stringify(updated));
       };
 
-      // Resilient Avatar Fetch
       const handleGenerateAiAvatar = () => {
         setIsGeneratingAvatar(true);
         const url = getGenerativeImageUrl(avatarPrompt, 500, 500);
@@ -273,6 +320,7 @@
           publicLore: `New face around ${formSchoolWork || 'town'}. Zero clout, just getting started.`,
           followers: 0,
           following: 0,
+          followingList: [],
           fameScore: 0,
           posts: []
         };
@@ -323,6 +371,71 @@
         }
       };
 
+      // Like / Unlike any post
+      const handleToggleLike = (post) => {
+        const isLiked = post.likedByPlayer;
+        const delta = isLiked ? -1 : 1;
+
+        // Update in feed
+        setFeed(prev => prev.map(p => p.id === post.id ? { ...p, likes: p.likes + delta, likedByPlayer: !isLiked } : p));
+        
+        // Update in NPCs catalog if belonging to NPC
+        setNpcs(prev => prev.map(npc => ({
+          ...npc,
+          posts: npc.posts.map(p => p.id === post.id ? { ...p, likes: p.likes + delta, likedByPlayer: !isLiked } : p)
+        })));
+
+        // If inspecting post
+        if (inspectedPost && inspectedPost.id === post.id) {
+          setInspectedPost(prev => ({ ...prev, likes: prev.likes + delta, likedByPlayer: !isLiked }));
+        }
+      };
+
+      // Add a comment to an NPC or player post
+      const handleAddComment = (post) => {
+        if (!postCommentInput.trim()) return;
+
+        const newComment = {
+          id: "cmt_" + Date.now(),
+          user: player.handle,
+          text: postCommentInput.trim(),
+          likes: 0
+        };
+
+        const updateComments = (postsList) =>
+          postsList.map(p => p.id === post.id ? { ...p, comments: [...(p.comments || []), newComment] } : p);
+
+        setFeed(prev => updateComments(prev));
+        setNpcs(prev => prev.map(npc => ({ ...npc, posts: updateComments(npc.posts) })));
+        if (inspectedPost && inspectedPost.id === post.id) {
+          setInspectedPost(prev => ({ ...prev, comments: [...(prev.comments || []), newComment] }));
+        }
+
+        setPostCommentInput("");
+
+        // NPC reacts or replies to comment after a delay
+        setTimeout(() => {
+          const npcAuthor = npcs.find(n => n.handle === post.author.handle);
+          if (npcAuthor && npcAuthor.category === "mutual") {
+            const replies = ["appreciate you! 🔥", "haha fr", "🙌🙌", "we need to link up soon!"];
+            const npcReply = {
+              id: "cmt_rep_" + Date.now(),
+              user: npcAuthor.handle,
+              text: replies[Math.floor(Math.random() * replies.length)],
+              likes: 1
+            };
+            setFeed(prev => prev.map(p => p.id === post.id ? { ...p, comments: [...(p.comments || []), npcReply] } : p));
+            setNpcs(prev => prev.map(npc => npc.handle === npcAuthor.handle ? {
+              ...npc,
+              posts: npc.posts.map(p => p.id === post.id ? { ...p, comments: [...(p.comments || []), npcReply] } : p)
+            } : npc));
+            if (inspectedPost && inspectedPost.id === post.id) {
+              setInspectedPost(prev => ({ ...prev, comments: [...(prev.comments || []), npcReply] }));
+            }
+          }
+        }, 1800);
+      };
+
       // Generate New AI Characters On Demand
       const handleGenerateMoreAiNpcs = async () => {
         setIsGeneratingNpcs(true);
@@ -330,7 +443,6 @@
 
         let generatedProfiles = null;
 
-        // Try using an active key if present
         if (apiKeys.length > 0) {
           for (const key of apiKeys) {
             try {
@@ -347,7 +459,7 @@
                   messages: [
                     {
                       role: "system",
-                      content: `Generate 2 realistic everyday social media profiles for peers near ${player.schoolWork}. Return ONLY valid JSON array with keys: name, handle, bio, disposition, relationship, photo_prompt. No markdown formatting, just the raw JSON.`
+                      content: `Generate 2 realistic social profiles for peers near ${player.schoolWork}. Return ONLY valid JSON array with keys: name, handle, bio, disposition, relationship, photo_prompt. No markdown formatting, just raw JSON.`
                     }
                   ]
                 })
@@ -366,7 +478,6 @@
           }
         }
 
-        // Fallback procedural generator if keys fail or are absent
         if (!generatedProfiles || !Array.isArray(generatedProfiles)) {
           const names = ["Marcus Bell", "Chloe Bennett", "Kai Thorne", "Zoe Vance"];
           const picked = names[Math.floor(Math.random() * names.length)];
@@ -395,7 +506,17 @@
           relationship: p.relationship || "Suggested Connection",
           mutualBadge: `Around ${player.schoolWork}`,
           disposition: p.disposition,
-          posts: []
+          posts: [
+            {
+              id: "p_gen_" + Date.now() + "_" + idx,
+              image: getGenerativeImageUrl("film photography aesthetic portrait", 600, 600),
+              caption: "new camera test 🎞️",
+              likes: Math.floor(Math.random() * 80) + 20,
+              likedByPlayer: false,
+              timestamp: "1h ago",
+              comments: []
+            }
+          ]
         }));
 
         setNpcs(prev => [...formatted, ...prev]);
@@ -405,7 +526,6 @@
         setTimeout(() => setAiStatusMessage(""), 3000);
       };
 
-      // Resilient Post Image Generation
       const handleGeneratePostImage = () => {
         setIsGeneratingPostImg(true);
         const url = getGenerativeImageUrl(postAiPrompt || "film camera aesthetic photo instagram post", 700, 700);
@@ -445,19 +565,19 @@
         const generatedComments = [];
         if (currentFollowers < 150 && !isViral) {
           generatedComments.push(
-            { user: "mayac", text: "okkk fit check?? where was my invite", likes: 2 },
-            { user: "alexrivers", text: "hard 🔥", likes: 1 }
+            { id: "cm_u1", user: "mayac", text: "okkk fit check?? where was my invite", likes: 2 },
+            { id: "cm_u2", user: "alexrivers", text: "hard 🔥", likes: 1 }
           );
         } else if (isViral) {
           generatedComments.push(
-            { user: "random_lurker_42", text: "why is this on my explore page lmao", likes: 142 },
-            { user: "trey_iron", text: "actually valid ngl", likes: 89 },
-            { user: "hater_patrol", text: "bro thought he did something here 💀", likes: 34 }
+            { id: "cm_v1", user: "random_lurker_42", text: "why is this on my explore page lmao", likes: 142 },
+            { id: "cm_v2", user: "trey_iron", text: "actually valid ngl", likes: 89 },
+            { id: "cm_v3", user: "hater_patrol", text: "bro thought he did something here 💀", likes: 34 }
           );
         } else {
           generatedComments.push(
-            { user: "alexrivers", text: "bro is glowing up", likes: 8 },
-            { user: "mayac", text: "drop the location right now", likes: 5 }
+            { id: "cm_g1", user: "alexrivers", text: "bro is glowing up", likes: 8 },
+            { id: "cm_g2", user: "mayac", text: "drop the location right now", likes: 5 }
           );
         }
 
@@ -466,6 +586,7 @@
           image: finalImg,
           caption: postCaption,
           likes: generatedLikes,
+          likedByPlayer: false,
           vibe: postVibe,
           timestamp: "Just now",
           comments: generatedComments,
@@ -518,12 +639,11 @@
 
         let aiGeneratedResponse = null;
 
-        // Iterate through stacked keys if available
         if (apiKeys.length > 0) {
           for (let i = 0; i < apiKeys.length; i++) {
             const currentKey = apiKeys[i].trim();
             try {
-              const systemPrompt = `You are ${targetNpc.name} (@${targetNpc.handle}) in an unfiltered Instagram simulator. Your bio: "${targetNpc.bio}". Your relationship to the player: "${targetNpc.relationship}". Your personality: "${targetNpc.disposition}". You are texting back via Instagram DMs. Respond naturally in authentic internet slang/texting, lowercase often, under 25 words. Don't be robotic.`;
+              const systemPrompt = `You are ${targetNpc.name} (@${targetNpc.handle}) in an unfiltered Instagram simulator. Bio: "${targetNpc.bio}". Relationship: "${targetNpc.relationship}". Personality: "${targetNpc.disposition}". You are texting back via Instagram DMs. Respond in authentic internet texting, lowercase often, under 25 words. Don't be robotic.`;
 
               const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                 method: "POST",
@@ -547,7 +667,7 @@
                 const reply = data.choices[0]?.message?.content?.trim();
                 if (reply) {
                   aiGeneratedResponse = reply;
-                  break; // Successful generation
+                  break;
                 }
               }
             } catch (err) {
@@ -573,7 +693,7 @@
           return;
         }
 
-        // Offline Heuristic Fallback if no keys work
+        // Offline Heuristic Fallback
         setTimeout(() => {
           let replyText = "Seen";
           if (targetNpc.verified && player.followers < 10000) {
@@ -622,12 +742,8 @@
         localStorage.setItem("status_sim_multi_saves", JSON.stringify(newSaves));
       };
 
-      // Export saves AND keys so you can sync to your phone in 1 click
       const handleExportSave = () => {
-        const exportBundle = {
-          saves: saves,
-          keys: apiKeys
-        };
+        const exportBundle = { saves, keys: apiKeys };
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportBundle));
         const a = document.createElement("a");
         a.href = dataStr;
@@ -660,6 +776,12 @@
           };
           reader.readAsText(file);
         }
+      };
+
+      // Open inspection of any user
+      const handleOpenUserProfile = (user) => {
+        setInspectedUser(user);
+        setInspectedPost(null);
       };
 
       // ONBOARDING
@@ -895,13 +1017,15 @@
             {/* HEADER */}
             <header className="sticky top-0 z-40 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800/60 px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-lg font-black tracking-tighter bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">STATUS</span>
+                <span className="text-lg font-black tracking-tighter bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent cursor-pointer" onClick={() => { setInspectedUser(null); setInspectedPost(null); setActiveTab("feed"); }}>
+                  STATUS
+                </span>
                 <span className="text-[10px] font-mono uppercase bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-400">
                   {saves[activeSlot]?.name || "Slot"}
                 </span>
                 {apiKeys.length > 0 && (
                   <span className="text-[9px] bg-green-500/20 text-green-400 border border-green-500/30 px-1.5 py-0.5 rounded font-mono">
-                    {apiKeys.length} Keys Active
+                    {apiKeys.length} Keys
                   </span>
                 )}
               </div>
@@ -914,7 +1038,7 @@
             {showSettings && (
               <div className="bg-zinc-900 border-b border-zinc-800 p-4 space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xs font-bold text-white uppercase tracking-wider">Save Slots & Stacked API Keys</h3>
+                  <h3 className="text-xs font-bold text-white uppercase tracking-wider">Save Slots & Stacked Keys</h3>
                   <button onClick={() => setShowSettings(false)} className="text-xs text-zinc-400">✕</button>
                 </div>
                 
@@ -944,7 +1068,7 @@
 
                 {/* Single-Key Stacking Box */}
                 <div className="pt-2 border-t border-zinc-800 space-y-2">
-                  <label className="text-xs text-zinc-400 font-semibold">Stack API Keys (OpenRouter, etc.)</label>
+                  <label className="text-xs text-zinc-400 font-semibold">Stack API Keys (No Commas Needed)</label>
                   <div className="flex gap-2">
                     <input 
                       type="password"
@@ -958,7 +1082,6 @@
                     </button>
                   </div>
 
-                  {/* List of stacked keys */}
                   <div className="space-y-1 pt-1">
                     {apiKeys.length === 0 ? (
                       <div className="text-[11px] text-zinc-500 italic">No keys stacked. Using offline dialogue mode.</div>
@@ -977,11 +1100,151 @@
               </div>
             )}
 
-            {/* TAB CONTENT */}
+            {/* TAB CONTENT OR INSPECTOR */}
             <main className="flex-1">
-              
-              {/* FEED */}
-              {activeTab === "feed" && (
+
+              {/* POST INSPECTION MODAL */}
+              {inspectedPost ? (
+                <div className="p-3 space-y-3">
+                  <button onClick={() => setInspectedPost(null)} className="text-xs font-bold text-zinc-400 hover:text-white flex items-center gap-1">
+                    ← Back
+                  </button>
+
+                  <div className="bg-zinc-950 border border-zinc-900 rounded-xl overflow-hidden pb-4">
+                    <div className="flex items-center gap-2.5 p-3">
+                      <img src={inspectedPost.author.avatar} className="w-8 h-8 rounded-full object-cover cursor-pointer" onClick={() => handleOpenUserProfile(inspectedPost.author)} />
+                      <div>
+                        <div className="text-xs font-bold text-white flex items-center gap-1 cursor-pointer" onClick={() => handleOpenUserProfile(inspectedPost.author)}>
+                          {inspectedPost.author.name}
+                          {inspectedPost.author.verified && <span className="text-blue-400 text-[10px]">✓</span>}
+                        </div>
+                        <div className="text-[10px] text-zinc-500">@{inspectedPost.author.handle}</div>
+                      </div>
+                    </div>
+
+                    <img src={inspectedPost.image} className="w-full aspect-square object-cover" />
+
+                    <div className="p-3 space-y-2">
+                      <div className="flex items-center gap-4">
+                        <button onClick={() => handleToggleLike(inspectedPost)} className={`transition ${inspectedPost.likedByPlayer ? 'text-red-500' : 'text-zinc-300'}`}>
+                          <svg className="w-6 h-6" fill={inspectedPost.likedByPlayer ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                        </button>
+                      </div>
+
+                      <div className="text-xs font-bold text-white">{inspectedPost.likes.toLocaleString()} likes</div>
+                      <p className="text-xs">
+                        <span className="font-bold text-white mr-1.5">{inspectedPost.author.handle}</span>
+                        <span className="text-zinc-300">{inspectedPost.caption}</span>
+                      </p>
+
+                      {/* Comments Section */}
+                      <div className="border-t border-zinc-900 pt-2 space-y-2">
+                        <div className="text-xs font-bold text-zinc-400">Comments</div>
+                        {(!inspectedPost.comments || inspectedPost.comments.length === 0) ? (
+                          <div className="text-xs text-zinc-600 italic">No comments yet. Be the first!</div>
+                        ) : (
+                          inspectedPost.comments.map((c, i) => (
+                            <div key={c.id || i} className="text-xs flex items-center justify-between">
+                              <div>
+                                <span className="font-bold text-white mr-1.5">{c.user}</span>
+                                <span className="text-zinc-300">{c.text}</span>
+                              </div>
+                              <span className="text-[10px] text-zinc-500">♡ {c.likes || 0}</span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+
+                      {/* Comment Input */}
+                      <div className="flex gap-2 pt-2 border-t border-zinc-900">
+                        <input 
+                          type="text" 
+                          placeholder="Add a comment..."
+                          value={postCommentInput}
+                          onChange={e => setPostCommentInput(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && handleAddComment(inspectedPost)}
+                          className="flex-1 bg-zinc-900 border border-zinc-800 rounded-full px-3 py-1.5 text-xs text-white focus:outline-none focus:border-pink-500"
+                        />
+                        <button onClick={() => handleAddComment(inspectedPost)} className="px-3 bg-pink-600 text-xs font-bold text-white rounded-full">
+                          Post
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : inspectedUser ? (
+                // USER PROFILE INSPECTION VIEW
+                <div className="p-4 space-y-4">
+                  <button onClick={() => setInspectedUser(null)} className="text-xs font-bold text-zinc-400 hover:text-white flex items-center gap-1">
+                    ← Back to {activeTab}
+                  </button>
+
+                  <div className="flex items-center justify-between">
+                    <img src={inspectedUser.avatar} className="w-20 h-20 rounded-full object-cover border-2 border-pink-500 p-0.5" />
+                    <div className="flex gap-6 text-center">
+                      <div>
+                        <div className="text-sm font-bold text-white">{inspectedUser.posts?.length || 0}</div>
+                        <div className="text-[10px] text-zinc-400">Posts</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-white">{inspectedUser.followers.toLocaleString()}</div>
+                        <div className="text-[10px] text-zinc-400">Followers</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-white">{inspectedUser.following.toLocaleString()}</div>
+                        <div className="text-[10px] text-zinc-400">Following</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h2 className="text-sm font-bold text-white flex items-center gap-1">
+                      {inspectedUser.name}
+                      {inspectedUser.verified && <span className="text-blue-400 text-xs">✓</span>}
+                    </h2>
+                    <div className="text-xs text-zinc-500 font-mono">@{inspectedUser.handle}</div>
+                    <p className="text-xs text-zinc-300 mt-1.5 whitespace-pre-line">{inspectedUser.bio}</p>
+                    <div className="text-[11px] text-pink-400 mt-1 font-medium">{inspectedUser.relationship}</div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => handleFollow(inspectedUser)}
+                      className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition ${player.followingList?.includes(inspectedUser.id) ? 'bg-zinc-800 text-zinc-300' : 'bg-pink-600 text-white'}`}
+                    >
+                      {player.followingList?.includes(inspectedUser.id) ? "Following" : "Follow"}
+                    </button>
+                    <button 
+                      onClick={() => { setActiveDmUser(inspectedUser); setInspectedUser(null); setActiveTab("dms"); }}
+                      className="flex-1 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs font-bold"
+                    >
+                      Message
+                    </button>
+                  </div>
+
+                  {/* Posts Grid */}
+                  <div>
+                    <div className="text-xs font-bold uppercase tracking-wider text-zinc-400 border-b border-zinc-800 pb-2 mb-2">Posts</div>
+                    {(!inspectedUser.posts || inspectedUser.posts.length === 0) ? (
+                      <div className="text-center py-10 text-zinc-600 text-xs">No posts yet.</div>
+                    ) : (
+                      <div className="grid grid-cols-3 gap-1">
+                        {inspectedUser.posts.map(p => (
+                          <div 
+                            key={p.id} 
+                            onClick={() => setInspectedPost({ ...p, author: inspectedUser })}
+                            className="aspect-square bg-zinc-900 cursor-pointer overflow-hidden relative group"
+                          >
+                            <img src={p.image} className="w-full h-full object-cover group-hover:scale-105 transition" />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : activeTab === "feed" ? (
+                // FEED TAB
                 <div className="divide-y divide-zinc-900">
                   <div className="flex items-center gap-3 p-3 overflow-x-auto no-scrollbar border-b border-zinc-900 bg-zinc-950">
                     <div className="flex flex-col items-center flex-shrink-0">
@@ -993,7 +1256,7 @@
                     </div>
 
                     {npcs.slice(0, 8).map(npc => (
-                      <div key={npc.id} className="flex flex-col items-center flex-shrink-0 cursor-pointer" onClick={() => { setActiveDmUser(npc); setActiveTab("dms"); }}>
+                      <div key={npc.id} className="flex flex-col items-center flex-shrink-0 cursor-pointer" onClick={() => handleOpenUserProfile(npc)}>
                         <div className="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600">
                           <img src={npc.avatar} className="w-full h-full rounded-full object-cover border-2 border-black" />
                         </div>
@@ -1010,7 +1273,7 @@
                     feed.map(post => (
                       <article key={post.id} className="bg-zinc-950 pb-4">
                         <div className="flex items-center justify-between px-3 py-2.5">
-                          <div className="flex items-center gap-2.5">
+                          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => handleOpenUserProfile(post.author)}>
                             <img src={post.author.avatar} className="w-8 h-8 rounded-full object-cover" />
                             <div>
                               <div className="text-xs font-bold text-white flex items-center gap-1">
@@ -1023,7 +1286,7 @@
                           <span className="text-[10px] text-zinc-500">{post.timestamp}</span>
                         </div>
 
-                        <div className="w-full aspect-square bg-zinc-900 relative">
+                        <div className="w-full aspect-square bg-zinc-900 relative cursor-pointer" onClick={() => setInspectedPost(post)}>
                           <img src={post.image} alt="Feed Post" className="w-full h-full object-cover" />
                           {post.vibe && (
                             <span className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[10px] text-pink-300 font-medium border border-white/10">
@@ -1033,16 +1296,28 @@
                         </div>
 
                         <div className="px-3 pt-2 text-xs">
+                          <div className="flex items-center gap-4 text-zinc-300 pb-1">
+                            <button onClick={() => handleToggleLike(post)} className={`transition ${post.likedByPlayer ? 'text-red-500' : 'hover:text-red-500'}`}>
+                              <svg className="w-6 h-6" fill={post.likedByPlayer ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                            </button>
+                            <button onClick={() => setInspectedPost(post)} className="hover:text-white transition">
+                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                            </button>
+                          </div>
+
                           <div className="font-bold text-white">{post.likes.toLocaleString()} likes</div>
                           <p className="mt-1">
-                            <span className="font-bold text-white mr-1.5">{post.author.handle}</span>
+                            <span className="font-bold text-white mr-1.5 cursor-pointer" onClick={() => handleOpenUserProfile(post.author)}>{post.author.handle}</span>
                             <span className="text-zinc-300">{post.caption}</span>
                           </p>
                         </div>
 
                         {post.comments && post.comments.length > 0 && (
                           <div className="px-3 pt-2 space-y-1">
-                            {post.comments.slice(0, 3).map((cmt, idx) => (
+                            <div className="text-[11px] text-zinc-500 font-medium cursor-pointer" onClick={() => setInspectedPost(post)}>
+                              View all {post.comments.length} comments
+                            </div>
+                            {post.comments.slice(0, 2).map((cmt, idx) => (
                               <div key={idx} className="text-xs flex items-center justify-between">
                                 <div>
                                   <span className="font-bold text-white mr-1.5">{cmt.user}</span>
@@ -1057,15 +1332,13 @@
                     ))
                   )}
                 </div>
-              )}
-
-              {/* DISCOVER & SPAWN MORE AI NPCS */}
-              {activeTab === "discover" && (
+              ) : activeTab === "discover" ? (
+                // EXPLORE & DISCOVER TAB
                 <div className="p-4 space-y-4">
                   <div className="flex justify-between items-center border-b border-zinc-800 pb-3">
                     <div>
-                      <h2 className="text-sm font-bold uppercase tracking-wider text-white">Suggested Connections</h2>
-                      <p className="text-[11px] text-zinc-400">People around {player.schoolWork}</p>
+                      <h2 className="text-sm font-bold uppercase tracking-wider text-white">Suggested For You</h2>
+                      <p className="text-[11px] text-zinc-400">Classmates & creators near {player.schoolWork}</p>
                     </div>
                     <button 
                       onClick={handleGenerateMoreAiNpcs} 
@@ -1087,7 +1360,7 @@
                       const isFollowing = player.followingList?.includes(user.id);
                       return (
                         <div key={user.id} className="flex items-center justify-between p-3 bg-zinc-900/60 rounded-xl border border-zinc-800">
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleOpenUserProfile(user)}>
                             <img src={user.avatar} className="w-12 h-12 rounded-full object-cover border border-zinc-800" />
                             <div>
                               <div className="text-xs font-bold text-white flex items-center gap-1">
@@ -1110,10 +1383,8 @@
                     })}
                   </div>
                 </div>
-              )}
-
-              {/* CREATE POST */}
-              {activeTab === "create" && (
+              ) : activeTab === "create" ? (
+                // CREATE POST TAB
                 <div className="p-4 space-y-4">
                   <div className="flex justify-between items-center border-b border-zinc-800 pb-3">
                     <h2 className="text-sm font-bold uppercase tracking-wider text-white">Create New Post</h2>
@@ -1224,19 +1495,17 @@
                     </button>
                   </div>
                 </div>
-              )}
-
-              {/* DMS */}
-              {activeTab === "dms" && (
+              ) : activeTab === "dms" ? (
+                // DMS TAB
                 <div className="flex flex-col h-[calc(100vh-120px)]">
                   {activeDmUser ? (
                     <div className="flex flex-col h-full">
                       <div className="flex items-center justify-between p-3 border-b border-zinc-800 bg-zinc-950">
                         <div className="flex items-center gap-2.5">
                           <button onClick={() => setActiveDmUser(null)} className="text-zinc-400 mr-1 text-sm font-bold">←</button>
-                          <img src={activeDmUser.avatar} className="w-8 h-8 rounded-full object-cover" />
+                          <img src={activeDmUser.avatar} className="w-8 h-8 rounded-full object-cover cursor-pointer" onClick={() => handleOpenUserProfile(activeDmUser)} />
                           <div>
-                            <div className="text-xs font-bold text-white flex items-center gap-1">
+                            <div className="text-xs font-bold text-white flex items-center gap-1 cursor-pointer" onClick={() => handleOpenUserProfile(activeDmUser)}>
                               {activeDmUser.name}
                               {activeDmUser.verified && <span className="text-blue-400 text-[10px]">✓</span>}
                             </div>
@@ -1320,10 +1589,8 @@
                     </div>
                   )}
                 </div>
-              )}
-
-              {/* PROFILE */}
-              {activeTab === "profile" && (
+              ) : (
+                // PLAYER PROFILE TAB
                 <div className="p-4 space-y-5">
                   <div className="flex items-center justify-between">
                     <img src={player.avatar} className="w-20 h-20 rounded-full object-cover border-2 border-pink-500 p-0.5" />
@@ -1371,7 +1638,11 @@
                     ) : (
                       <div className="grid grid-cols-3 gap-1">
                         {player.posts.map(p => (
-                          <div key={p.id} className="aspect-square bg-zinc-900">
+                          <div 
+                            key={p.id} 
+                            onClick={() => setInspectedPost({ ...p, author: player })}
+                            className="aspect-square bg-zinc-900 cursor-pointer overflow-hidden"
+                          >
                             <img src={p.image} className="w-full h-full object-cover" />
                           </div>
                         ))}
@@ -1383,26 +1654,26 @@
 
             </main>
 
-            {/* BOTTOM NAV */}
+            {/* BOTTOM NAV BAR */}
             <nav className="fixed bottom-0 max-w-md w-full bg-zinc-950/95 backdrop-blur-md border-t border-zinc-800/80 px-6 py-3 flex items-center justify-between z-40">
-              <button onClick={() => setActiveTab("feed")} className={`flex flex-col items-center ${activeTab === 'feed' ? 'text-pink-500' : 'text-zinc-500'}`}>
+              <button onClick={() => { setInspectedUser(null); setInspectedPost(null); setActiveTab("feed"); }} className={`flex flex-col items-center ${activeTab === 'feed' && !inspectedUser && !inspectedPost ? 'text-pink-500' : 'text-zinc-500'}`}>
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path></svg>
               </button>
 
-              <button onClick={() => setActiveTab("discover")} className={`flex flex-col items-center ${activeTab === 'discover' ? 'text-pink-500' : 'text-zinc-500'}`}>
+              <button onClick={() => { setInspectedUser(null); setInspectedPost(null); setActiveTab("discover"); }} className={`flex flex-col items-center ${activeTab === 'discover' ? 'text-pink-500' : 'text-zinc-500'}`}>
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
               </button>
 
-              <button onClick={() => setActiveTab("create")} className="flex items-center justify-center w-10 h-10 rounded-full bg-pink-600 hover:bg-pink-500 text-white shadow-lg shadow-pink-600/30">
+              <button onClick={() => { setInspectedUser(null); setInspectedPost(null); setActiveTab("create"); }} className="flex items-center justify-center w-10 h-10 rounded-full bg-pink-600 hover:bg-pink-500 text-white shadow-lg shadow-pink-600/30">
                 <span className="text-xl font-bold leading-none mb-0.5">+</span>
               </button>
 
-              <button onClick={() => { setActiveDmUser(null); setActiveTab("dms"); }} className={`flex flex-col items-center ${activeTab === 'dms' ? 'text-pink-500' : 'text-zinc-500'}`}>
+              <button onClick={() => { setInspectedUser(null); setInspectedPost(null); setActiveDmUser(null); setActiveTab("dms"); }} className={`flex flex-col items-center ${activeTab === 'dms' ? 'text-pink-500' : 'text-zinc-500'}`}>
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
               </button>
 
-              <button onClick={() => setActiveTab("profile")} className={`flex flex-col items-center ${activeTab === 'profile' ? 'text-pink-500' : 'text-zinc-500'}`}>
-                <img src={player.avatar} className={`w-6 h-6 rounded-full object-cover border ${activeTab === 'profile' ? 'border-pink-500' : 'border-zinc-700'}`} />
+              <button onClick={() => { setInspectedUser(null); setInspectedPost(null); setActiveTab("profile"); }} className={`flex flex-col items-center ${activeTab === 'profile' && !inspectedUser && !inspectedPost ? 'text-pink-500' : 'text-zinc-500'}`}>
+                <img src={player.avatar} className={`w-6 h-6 rounded-full object-cover border ${activeTab === 'profile' && !inspectedUser && !inspectedPost ? 'border-pink-500' : 'border-zinc-700'}`} />
               </button>
             </nav>
 
