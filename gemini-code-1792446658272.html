@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Status Sim - Celebrity & Social RPG</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <!-- Babel -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    /* iOS smooth scrolling and hidden scrollbar styles */
+    body { -webkit-tap-highlight-color: transparent; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-black text-zinc-100 font-sans antialiased selection:bg-pink-500 selection:text-white">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // --- HELPER: Pollinations AI Image Endpoint ---
+    const generateAIImageUrl = (prompt, width = 600, height = 600) => {
+      const cleanPrompt = encodeURIComponent(prompt.trim() || "portrait aesthetic person cinematic lighting");
+      return `https://image.pollinations.ai/prompt/${cleanPrompt}?width=${width}&height=${height}&nologo=true&seed=${Math.floor(Math.random() * 100000)}`;
+    };
+
+    // --- CELEBRITIES & ARCHETYPES DATA ---
+    const INITIAL_NPCS = [
+      {
+        id: "npc_1",
+        name: "Elena Vance",
+        handle: "elenavance",
+        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+        category: "fashion",
+        verified: true,
+        followers: 4850000,
+        following: 340,
+        bio: "Paris / NYC. Creative Director & Runway. Keep up.",
+        relationship: "Verified Icon (Out of Reach)",
+        disposition: "cold, luxury, blunt",
+        posts: [
+          {
+            id: "p_elena_1",
+            image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=80",
+            caption: "Fitting day in Marais. Either wear the piece or don't bother.",
+            likes: 182400,
+            timestamp: "2h ago",
+            comments: [
+              { user: "chloeluxe", text: "THAT SILHOUETTE OMG 🔥", likes: 341 },
+              { user: "marcus_k", text: "Insane fit", likes: 88 }
+            ]
+          }
+        ]
+      },
+      {
+        id: "npc_2",
+        name: "Jaxson Cole",
+        handle: "jaxsoncole",
+        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+        category: "musicians",
+        verified: true,
+        followers: 1240000,
+        following: 512,
+        bio: "sample chops & 70s soul basslines. debut album soon. 🎹",
+        relationship: "Industry Celebrity",
+        disposition: "chill, artistic, occasional hot takes",
+        posts: [
+          {
+            id: "p_jax_1",
+            image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80",
+            caption: "been in the lab for 14 hours straight. 2am Rhodes chords hit different.",
+            likes: 42100,
+            timestamp: "4h ago",
+            comments: [
+              { user: "beatmaker_sam", text: "drop the snippet bro stop gatekeeping", likes: 212 },
+              { user: "vibecheck_daily", text: "unreal setup", likes: 45 }
+            ]
+          }
+        ]
+      },
+      {
+        id: "npc_3",
+        name: "Trey Jenkins",
+        handle: "trey_iron",
+        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+        category: "gym",
+        verified: false,
+        followers: 18200,
+        following: 420,
+        bio: "Heavy compounds & meal prep. Stop overthinking progressive overload.",
+        relationship: "Gym Bro / Mutual",
+        disposition: "hype, honest, direct, zero filter",
+        posts: [
+          {
+            id: "p_trey_1",
+            image: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&auto=format&fit=crop&q=80",
+            caption: "495lb rack pull moved like butter. If you're skipping heavy days don't talk to me.",
+            likes: 1204,
+            timestamp: "7h ago",
+            comments: [
+              { user: "kyle_pulls", text: "form was clean too damn", likes: 19 },
+              { user: "gymcritic99", text: "hitch at the knees tbh", likes: 4 }
+            ]
+          }
+        ]
+      }
+    ];
+
+    // Helper to generate demographic mutuals based on onboarding school/work
+    const generateDemographicMutuals = (schoolOrWork) => {
+      const workplace = schoolOrWork || "Campus / Local";
+      return [
+        {
+          id: "npc_mut_1",
+          name: "Maya Chen",
+          handle: "mayac",
+          avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80",
+          category: "mutual",
+          verified: false,
+          followers: 432,
+          following: 410,
+          bio: `hanging out around ${workplace} ☕ film cameras & iced lattes`,
+          relationship: "Close Friend / Mutual",
+          mutualBadge: `Attends ${workplace}`,
+          disposition: "warm, sarcastic, inside jokes",
+          posts: []
+        },
+        {
+          id: "npc_mut_2",
+          name: "Alex Rivera",
+          handle: "alexrivers",
+          avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80",
+          category: "mutual",
+          verified: false,
+          followers: 612,
+          following: 580,
+          bio: `coffee addict at ${workplace}. someone please fix my sleep schedule`,
+          relationship: "Friend / Classmate",
+          mutualBadge: `Mutual friend with Maya + 3 others`,
+          disposition: "casual, goofy, always online",
+          posts: []
+        },
+        {
+          id: "npc_mut_3",
+          name: "Jordan Hayes",
+          handle: "jhayes_99",
+          avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=80",
+          category: "mutual",
+          verified: false,
+          followers: 890,
+          following: 640,
+          bio: "weekend runner | thrifting | photography",
+          relationship: "Situationship / Complicated",
+          mutualBadge: `Works / Studies near ${workplace}`,
+          disposition: "playful, mysterious, leaves ambiguous comments",
+          posts: []
+        }
+      ];
+    };
+
+    function App() {
+      // --- SAVE FILE & APP STATES ---
+      const [saves, setSaves] = useState(() => {
+        const saved = localStorage.getItem("status_sim_multi_saves");
+        return saved ? JSON.parse(saved) : {
+          "slot_1": {
+            name: "Main Career",
+            created: new Date().toLocaleDateString(),
+            gameState: null
+          }
+        };
+      });
+      const [activeSlot, setActiveSlot] = useState("slot_1");
+
+      // Current Game State
+      const [player, setPlayer] = useState(null);
+      const [feed, setFeed] = useState([]);
+      const [npcs, setNpcs] = useState([]);
+      const [suggestedFollows, setSuggestedFollows] = useState([]);
+      const [dms, setDms] = useState({});
+      const [activeDmUser, setActiveDmUser] = useState(null);
+      const [activeTab, setActiveTab] = useState("feed"); // 'feed', 'explore', 'create', 'dms', 'profile', 'saves'
+
+      // Onboarding & Creation State
+      const [onboardingStep, setOnboardingStep] = useState(1);
+      const [formName, setFormName] = useState("");
+      const [formHandle, setFormHandle] = useState("");
+      const [formBio, setFormBio] = useState("");
+      const [formAge, setFormAge] = useState("20");
+      const [formSchoolWork, setFormSchoolWork] = useState("Ohio State");
+      const [formAspirations, setFormAspirations] = useState("Aspiring Creative & Music Producer");
+      const [avatarMethod, setAvatarMethod] = useState("ai"); // 'ai', 'url', 'upload'
+      const [avatarPrompt, setAvatarPrompt] = useState("vintage 20yo guy aesthetic 35mm film grain portrait");
+      const [avatarUrl, setAvatarUrl] = useState("");
+      const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
+
+      // Create Post Modal State
+      const [postMethod, setPostMethod] = useState("ai");
+      const [postAiPrompt, setPostAiPrompt] = useState("");
+      const [postImageUrl, setPostImageUrl] = useState("");
+      const [postCaption, setPostCaption] = useState("");
+      const [postVibe, setPostVibe] = useState("Aesthetic Dump");
+      const [isGeneratingPostImg, setIsGeneratingPostImg] = useState(false);
+
+      // DM Input
+      const [dmMessage, setDmMessage] = useState("");
+
+      // Settings & OpenRouter Key
+      const [apiKey, setApiKey] = useState(() => localStorage.getItem("status_sim_openrouter_key") || "");
+      const [showSettings, setShowSettings] = useState(false);
+
+      // Sync active slot save
+      useEffect(() => {
+        if (player) {
+          const updatedSaves = {
+            ...saves,
+            [activeSlot]: {
+              ...saves[activeSlot],
+              gameState: { player, feed, npcs, suggestedFollows, dms }
+            }
+          };
+          setSaves(updatedSaves);
+          localStorage.setItem("status_sim_multi_saves", JSON.stringify(updatedSaves));
+        }
+      }, [player, feed, npcs, dms]);
+
+      // Save API key
+      const handleSaveApiKey = (key) => {
+        setApiKey(key);
+        localStorage.setItem("status_sim_openrouter_key", key);
+        alert("API Key saved to browser!");
+      };
+
+      // Load active slot on mount or change
+      useEffect(() => {
+        const slotData = saves[activeSlot];
+        if (slotData && slotData.gameState) {
+          setPlayer(slotData.gameState.player);
+          setFeed(slotData.gameState.feed);
+          setNpcs(slotData.gameState.npcs);
+          setSuggestedFollows(slotData.gameState.suggestedFollows || []);
+          setDms(slotData.gameState.dms || {});
+        } else {
+          setPlayer(null); // Triggers onboarding
+        }
+      }, [activeSlot]);
+
+      // --- AVATAR HANDLERS ---
+      const handleGenerateAiAvatar = () => {
+        setIsGeneratingAvatar(true);
+        const url = generateAIImageUrl(avatarPrompt);
+        // Preload image
+        const img = new Image();
+        img.src = url;
+        img.onload = () => {
+          setAvatarUrl(url);
+          setIsGeneratingAvatar(false);
+        };
+        img.onerror = () => setIsGeneratingAvatar(false);
+      };
+
+      const handleFileUpload = (e, targetSetter) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            targetSetter(reader.result);
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+
+      // --- FINALIZE ONBOARDING ---
+      const handleCompleteOnboarding = () => {
+        const finalAvatar = avatarUrl || generateAIImageUrl("cool young person aesthetic profile picture");
+        const newPlayer = {
+          name: formName || "Alex Rivers",
+          handle: (formHandle || "alexrivers").toLowerCase().replace(/[^a-z0-9_]/g, ""),
+          avatar: finalAvatar,
+          bio: formBio || "just living life ✨",
+          age: formAge,
+          schoolWork: formSchoolWork || "Columbus, OH",
+          aspirations: formAspirations || "Aspiring Creative",
+          publicLore: `Known locally around ${formSchoolWork || 'town'}. Low-key presence, just started posting.`,
+          followers: 0,
+          following: 0,
+          fameScore: 0,
+          posts: []
+        };
+
+        const demMutuals = generateDemographicMutuals(formSchoolWork);
+        const fullNpcPool = [...INITIAL_NPCS, ...demMutuals];
+        
+        // Assemble initial feed
+        const starterFeed = [];
+        fullNpcPool.forEach(n => {
+          if (n.posts && n.posts.length > 0) {
+            n.posts.forEach(p => {
+              starterFeed.push({
+                ...p,
+                author: n
+              });
+            });
+          }
+        });
+
+        setPlayer(newPlayer);
+        setNpcs(fullNpcPool);
+        setSuggestedFollows(demMutuals);
+        setFeed(starterFeed);
+        setOnboardingStep(3); // Show immediate suggested follows
+      };
+
+      // --- FOLLOW USER HANDLER ---
+      const handleFollow = (targetNpc) => {
+        const isFollowing = player.followingList?.includes(targetNpc.id);
+        const updatedFollowing = isFollowing 
+          ? player.followingList.filter(id => id !== targetNpc.id)
+          : [...(player.followingList || []), targetNpc.id];
+
+        setPlayer(prev => ({
+          ...prev,
+          following: updatedFollowing.length,
+          followingList: updatedFollowing
+        }));
+
+        // Mutuals might follow back if they are everyday people
+        if (!isFollowing && targetNpc.category === "mutual" && Math.random() > 0.3) {
+          setTimeout(() => {
+            setPlayer(prev => ({
+              ...prev,
+              followers: prev.followers + 1
+            }));
+            // Send casual intro DM
+            const introMsg = {
+              id: "dm_" + Date.now(),
+              sender: "npc",
+              text: `yooo I saw you made an account! how's ${player.schoolWork}?`,
+              timestamp: "Just now"
+            };
+            setDms(prev => ({
+              ...prev,
+              [targetNpc.handle]: [...(prev[targetNpc.handle] || []), introMsg]
+            }));
+          }, 3000);
+        }
+      };
+
+      // --- CREATE POST & VIRALITY ENGINE ---
+      const handleCreatePost = () => {
+        const finalPostImg = postImageUrl || generateAIImageUrl(postAiPrompt || "cool aesthetic photo instagram post", 800, 800);
+        
+        // Calculate Virality based on follower tier & vibe
+        const currentFollowers = player.followers;
+        let viralRoll = Math.random();
+        let reachMultiplier = 1;
+
+        if (postVibe === "Unfiltered Rant" || postVibe === "Hot Take") {
+          viralRoll += 0.25; // Higher risk, higher reward
+        }
+
+        const isViral = viralRoll > 0.85;
+        let gainedFollowers = 0;
+        let generatedLikes = 0;
+
+        if (currentFollowers < 150) {
+          generatedLikes = Math.floor(Math.random() * (currentFollowers + 1) * 0.7) + 2;
+          gainedFollowers = isViral ? Math.floor(Math.random() * 80) + 15 : Math.floor(Math.random() * 3);
+        } else if (currentFollowers < 2500) {
+          generatedLikes = Math.floor(currentFollowers * (0.15 + Math.random() * 0.25));
+          gainedFollowers = isViral ? Math.floor(Math.random() * 450) + 80 : Math.floor(Math.random() * 12);
+        } else {
+          generatedLikes = Math.floor(currentFollowers * (0.08 + Math.random() * 0.2));
+          gainedFollowers = isViral ? Math.floor(Math.random() * 3000) + 500 : Math.floor(Math.random() * 50);
+        }
+
+        // Generate realistic comments reflecting follower tier & internet culture
+        const generatedComments = [];
+        if (currentFollowers < 150 && !isViral) {
+          generatedComments.push(
+            { user: "mayac", text: "okkk fit check?? where was my invite", likes: 2 },
+            { user: "alexrivers", text: "hard 🔥", likes: 1 }
+          );
+        } else if (isViral) {
+          generatedComments.push(
+            { user: "random_lurker_42", text: "why is this on my explore page lmao", likes: 142 },
+            { user: "trey_iron", text: "actually valid ngl", likes: 89 },
+            { user: "hater_patrol", text: "bro thought he did something here 💀", likes: 34 },
+            { user: "sophia_lens", text: "the composition goes crazy!!", likes: 23 }
+          );
+        } else {
+          generatedComments.push(
+            { user: "alexrivers", text: "bro is glowing up", likes: 8 },
+            { user: "mayac", text: "drop the location right now", likes: 5 }
+          );
+        }
+
+        const newPost = {
+          id: "p_user_" + Date.now(),
+          image: finalPostImg,
+          caption: postCaption,
+          likes: generatedLikes,
+          vibe: postVibe,
+          timestamp: "Just now",
+          comments: generatedComments,
+          author: {
+            name: player.name,
+            handle: player.handle,
+            avatar: player.avatar,
+            verified: player.fameScore > 50000
+          }
+        };
+
+        // Update Lore over time
+        let updatedLore = player.publicLore;
+        if (isViral) {
+          updatedLore = `Currently trending after a viral ${postVibe.toLowerCase()} post. Strangers in the comments are debating their vibe.`;
+        } else if (player.posts.length > 3) {
+          updatedLore = `Actively building an audience around ${player.aspirations}. Consistent aesthetic with a growing local following.`;
+        }
+
+        setPlayer(prev => ({
+          ...prev,
+          followers: prev.followers + gainedFollowers,
+          fameScore: prev.fameScore + (isViral ? 200 : 25),
+          publicLore: updatedLore,
+          posts: [newPost, ...prev.posts]
+        }));
+
+        setFeed(prev => [newPost, ...prev]);
+
+        // Reset creation inputs
+        setPostCaption("");
+        setPostImageUrl("");
+        setPostAiPrompt("");
+        setActiveTab("feed");
+      };
+
+      // --- DM SEND SYSTEM ---
+      const handleSendDm = (targetNpc) => {
+        if (!dmMessage.trim()) return;
+
+        const userMsg = {
+          id: "dm_u_" + Date.now(),
+          sender: "user",
+          text: dmMessage,
+          timestamp: "Just now"
+        };
+
+        const updatedHistory = [...(dms[targetNpc.handle] || []), userMsg];
+        setDms(prev => ({
+          ...prev,
+          [targetNpc.handle]: updatedHistory
+        }));
+
+        setDmMessage("");
+
+        // Simulate NPC Reply logic
+        setTimeout(() => {
+          let replyText = "Seen";
+          if (targetNpc.verified && player.followers < 10000) {
+            // High tier celebs ignore DMs unless you have fame
+            return; 
+          }
+
+          if (targetNpc.category === "mutual") {
+            const replies = [
+              "hahaha no way",
+              "lmao wait are you fr??",
+              "we need to link up soon actually",
+              "dude literally",
+              "nah that's crazy 😭"
+            ];
+            replyText = replies[Math.floor(Math.random() * replies.length)];
+          } else if (targetNpc.category === "gym") {
+            replyText = "Lock in bro, heavy sets cure everything.";
+          } else {
+            replyText = "appreciate the love! stay creative ⚡";
+          }
+
+          setDms(prev => ({
+            ...prev,
+            [targetNpc.handle]: [
+              ...(prev[targetNpc.handle] || []),
+              {
+                id: "dm_npc_" + Date.now(),
+                sender: "npc",
+                text: replyText,
+                timestamp: "Just now"
+              }
+            ]
+          }));
+        }, 1200);
+      };
+
+      // --- SAVE FILE MANAGEMENT ---
+      const handleCreateNewSlot = () => {
+        const slotKey = "slot_" + Date.now();
+        const slotTitle = prompt("Enter a name for this new save slot (e.g., 'Fitness Arc', 'Musician Run'):") || "New Career";
+        const newSaves = {
+          ...saves,
+          [slotKey]: {
+            name: slotTitle,
+            created: new Date().toLocaleDateString(),
+            gameState: null
+          }
+        };
+        setSaves(newSaves);
+        setActiveSlot(slotKey);
+        localStorage.setItem("status_sim_multi_saves", JSON.stringify(newSaves));
+      };
+
+      const handleExportSave = () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(saves));
+        const downloadAnchor = document.createElement("a");
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `status_sim_backup_${Date.now()}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+      };
+
+      const handleImportSave = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              const imported = JSON.parse(event.target.result);
+              setSaves(imported);
+              const firstSlot = Object.keys(imported)[0];
+              setActiveSlot(firstSlot);
+              localStorage.setItem("status_sim_multi_saves", JSON.stringify(imported));
+              alert("Save file imported successfully!");
+            } catch (err) {
+              alert("Invalid JSON save file.");
+            }
+          };
+          reader.readAsText(file);
+        }
+      };
+
+      // ==========================================
+      // VIEW: ONBOARDING / CHARACTER CREATOR
+      // ==========================================
+      if (!player) {
+        return (
+          <div className="min-h-screen bg-zinc-950 flex flex-col justify-center items-center p-4">
+            <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl space-y-6">
+              
+              <div className="text-center space-y-1">
+                <span className="text-xs font-bold tracking-widest text-pink-500 uppercase">Status RPG</span>
+                <h1 className="text-2xl font-black tracking-tight text-white">Create Your Social Persona</h1>
+                <p className="text-xs text-zinc-400">Start from 0 followers. Choose your identity and demographic.</p>
+              </div>
+
+              {onboardingStep === 1 && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-medium text-zinc-300">Display Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Jordan Rivers"
+                      value={formName}
+                      onChange={e => setFormName(e.target.value)}
+                      className="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-pink-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-zinc-300">Username (@handle)</label>
+                    <div className="flex items-center mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3">
+                      <span className="text-zinc-500 text-sm">@</span>
+                      <input 
+                        type="text" 
+                        placeholder="jordanrivers"
+                        value={formHandle}
+                        onChange={e => setFormHandle(e.target.value)}
+                        className="w-full bg-transparent p-2.5 text-sm text-white focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-medium text-zinc-300">Age</label>
+                      <input 
+                        type="number" 
+                        value={formAge}
+                        onChange={e => setFormAge(e.target.value)}
+                        className="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-pink-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-zinc-300">School / Workplace</label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. Ohio State, Apple"
+                        value={formSchoolWork}
+                        onChange={e => setFormSchoolWork(e.target.value)}
+                        className="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-pink-500"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-zinc-300">Bio</label>
+                    <textarea 
+                      placeholder="e.g. late night runs & 70s soul vinyl 📻"
+                      value={formBio}
+                      onChange={e => setFormBio(e.target.value)}
+                      className="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-pink-500 h-20 resize-none"
+                    />
+                  </div>
+                  <button 
+                    onClick={() => setOnboardingStep(2)}
+                    className="w-full py-3 bg-pink-600 hover:bg-pink-500 text-white font-semibold rounded-xl text-sm transition"
+                  >
+                    Next: Set Profile Picture & Aspirations →
+                  </button>
+                </div>
+              )}
+
+              {onboardingStep === 2 && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-medium text-zinc-300">Public Aspiration ("The Steering Goal")</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Aspiring R&B Producer / High Fashion Model"
+                      value={formAspirations}
+                      onChange={e => setFormAspirations(e.target.value)}
+                      className="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-pink-500"
+                    />
+                    <span className="text-[10px] text-zinc-500 mt-1 block">This feeds the AI engine so NPCs know what you're grinding toward.</span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-zinc-300">Profile Picture Method</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button 
+                        onClick={() => setAvatarMethod("ai")}
+                        className={`py-2 text-xs font-medium rounded-lg border ${avatarMethod === 'ai' ? 'bg-zinc-800 border-pink-500 text-white' : 'border-zinc-800 text-zinc-400'}`}
+                      >
+                        AI Generate
+                      </button>
+                      <button 
+                        onClick={() => setAvatarMethod("upload")}
+                        className={`py-2 text-xs font-medium rounded-lg border ${avatarMethod === 'upload' ? 'bg-zinc-800 border-pink-500 text-white' : 'border-zinc-800 text-zinc-400'}`}
+                      >
+                        Upload File
+                      </button>
+                      <button 
+                        onClick={() => setAvatarMethod("url")}
+                        className={`py-2 text-xs font-medium rounded-lg border ${avatarMethod === 'url' ? 'bg-zinc-800 border-pink-500 text-white' : 'border-zinc-800 text-zinc-400'}`}
+                      >
+                        Image Link
+                      </button>
+                    </div>
+                  </div>
+
+                  {avatarMethod === "ai" && (
+                    <div className="space-y-2">
+                      <textarea 
+                        value={avatarPrompt}
+                        onChange={e => setAvatarPrompt(e.target.value)}
+                        placeholder="Describe your look (e.g. 21yo college guy curly hair, dark leather jacket, grainy film portrait)"
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-pink-500 h-16 resize-none"
+                      />
+                      <button 
+                        onClick={handleGenerateAiAvatar}
+                        disabled={isGeneratingAvatar}
+                        className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-xs text-pink-400 font-semibold rounded-lg border border-pink-500/30 transition flex items-center justify-center gap-2"
+                      >
+                        {isGeneratingAvatar ? "Dreaming avatar..." : "✨ Generate Avatar with AI"}
+                      </button>
+                    </div>
+                  )}
+
+                  {avatarMethod === "upload" && (
+                    <div className="border border-dashed border-zinc-800 rounded-lg p-4 text-center">
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={e => handleFileUpload(e, setAvatarUrl)}
+                        className="text-xs text-zinc-400 file:mr-2 file:py-1 file:px-3 file:rounded-md file:border-0 file:bg-zinc-800 file:text-white hover:file:bg-zinc-700"
+                      />
+                    </div>
+                  )}
+
+                  {avatarMethod === "url" && (
+                    <input 
+                      type="text" 
+                      placeholder="Paste direct https:// image URL"
+                      value={avatarUrl}
+                      onChange={e => setAvatarUrl(e.target.value)}
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-pink-500"
+                    />
+                  )}
+
+                  {avatarUrl && (
+                    <div className="flex items-center gap-3 p-2 bg-zinc-950 rounded-xl border border-zinc-800">
+                      <img src={avatarUrl} alt="Avatar Preview" className="w-14 h-14 rounded-full object-cover border border-pink-500" />
+                      <div>
+                        <div className="text-xs font-semibold text-white">Avatar Ready</div>
+                        <div className="text-[10px] text-zinc-500">Looking clean. Let's start the sim.</div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2 pt-2">
+                    <button 
+                      onClick={() => setOnboardingStep(1)}
+                      className="py-3 px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold rounded-xl text-sm"
+                    >
+                      Back
+                    </button>
+                    <button 
+                      onClick={handleCompleteOnboarding}
+                      className="flex-1 py-3 bg-pink-600 hover:bg-pink-500 text-white font-semibold rounded-xl text-sm transition"
+                    >
+                      Launch Profile & Find Mutuals →
+                    </button>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+        );
+      }
+
+      // ==========================================
+      // VIEW: ONBOARDING STEP 3 (SUGGESTED FOLLOWS)
+      // ==========================================
+      if (onboardingStep === 3) {
+        return (
+          <div className="min-h-screen bg-zinc-950 flex flex-col justify-center items-center p-4">
+            <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl space-y-5">
+              <div className="text-center space-y-1">
+                <span className="text-xs font-bold tracking-widest text-pink-500 uppercase">Suggested For You</span>
+                <h2 className="text-xl font-bold text-white">People You May Know</h2>
+                <p className="text-xs text-zinc-400">Based on {player.schoolWork} and your demographic.</p>
+              </div>
+
+              <div className="space-y-3">
+                {suggestedFollows.map(user => {
+                  const isFollowing = player.followingList?.includes(user.id);
+                  return (
+                    <div key={user.id} className="flex items-center justify-between p-3 bg-zinc-950 rounded-xl border border-zinc-800/80">
+                      <div className="flex items-center gap-3">
+                        <img src={user.avatar} className="w-11 h-11 rounded-full object-cover border border-zinc-800" />
+                        <div>
+                          <div className="text-sm font-semibold text-white flex items-center gap-1">
+                            {user.name}
+                            {user.verified && <span className="text-blue-400 text-xs">✓</span>}
+                          </div>
+                          <div className="text-[11px] text-zinc-500 font-medium">@{user.handle}</div>
+                          <div className="text-[10px] text-pink-400/90 font-medium mt-0.5">{user.mutualBadge}</div>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => handleFollow(user)}
+                        className={`text-xs px-3.5 py-1.5 rounded-lg font-medium transition ${isFollowing ? 'bg-zinc-800 text-zinc-300' : 'bg-pink-600 hover:bg-pink-500 text-white'}`}
+                      >
+                        {isFollowing ? "Following" : "Follow"}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <button 
+                onClick={() => setOnboardingStep(0)} // Done onboarding
+                className="w-full py-3 bg-zinc-100 hover:bg-white text-zinc-950 font-bold rounded-xl text-sm transition"
+              >
+                Go to Feed ({player.following} Following) →
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      // ==========================================
+      // MAIN APP LAYOUT (MOBILE FRAMEWORK)
+      // ==========================================
+      return (
+        <div className="min-h-screen bg-black text-zinc-100 flex justify-center">
+          <div className="w-full max-w-md bg-zinc-950 border-x border-zinc-800/60 min-h-screen flex flex-col pb-20">
+
+            {/* TOP NAVIGATION BAR */}
+            <header className="sticky top-0 z-40 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800/60 px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-black tracking-tighter bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">STATUS</span>
+                <span className="text-[10px] font-mono uppercase bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-400">
+                  {saves[activeSlot]?.name || "Slot"}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <button onClick={() => setShowSettings(!showSettings)} className="text-zinc-400 hover:text-white">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                </button>
+              </div>
+            </header>
+
+            {/* SETTINGS / MULTI-SAVE MODAL */}
+            {showSettings && (
+              <div className="bg-zinc-900 border-b border-zinc-800 p-4 space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">Game Saves & Slots</h3>
+                  <button onClick={() => setShowSettings(false)} className="text-xs text-zinc-400">Close</button>
+                </div>
+                
+                {/* Save Slots Switcher */}
+                <div className="space-y-2">
+                  <label className="text-xs text-zinc-400">Active Save Slot:</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {Object.keys(saves).map(slotKey => (
+                      <button 
+                        key={slotKey}
+                        onClick={() => setActiveSlot(slotKey)}
+                        className={`p-2 text-left rounded-lg text-xs border ${activeSlot === slotKey ? 'border-pink-500 bg-pink-500/10 text-white' : 'border-zinc-800 bg-zinc-950 text-zinc-400'}`}
+                      >
+                        <div className="font-semibold truncate">{saves[slotKey].name}</div>
+                        <div className="text-[10px] text-zinc-500">{saves[slotKey].created}</div>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 pt-1">
+                    <button onClick={handleCreateNewSlot} className="flex-1 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-xs text-white rounded-md">+ New Slot</button>
+                    <button onClick={handleExportSave} className="py-1.5 px-3 bg-zinc-800 hover:bg-zinc-700 text-xs text-zinc-300 rounded-md">Export JSON</button>
+                    <label className="py-1.5 px-3 bg-zinc-800 hover:bg-zinc-700 text-xs text-zinc-300 rounded-md cursor-pointer">
+                      Import <input type="file" accept=".json" onChange={handleImportSave} className="hidden" />
+                    </label>
+                  </div>
+                </div>
+
+                {/* API Key Box */}
+                <div className="pt-2 border-t border-zinc-800">
+                  <label className="text-xs text-zinc-400">OpenRouter API Key (Optional for unscripted DMs)</label>
+                  <div className="flex gap-2 mt-1">
+                    <input 
+                      type="password"
+                      placeholder="sk-or-v1-..."
+                      defaultValue={apiKey}
+                      onChange={e => setApiKey(e.target.value)}
+                      className="flex-1 bg-zinc-950 border border-zinc-800 rounded px-2 py-1 text-xs text-white"
+                    />
+                    <button onClick={() => handleSaveApiKey(apiKey)} className="px-3 bg-pink-600 text-xs font-semibold rounded text-white">Save</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* MAIN CONTENT AREA BY TAB */}
+            <main className="flex-1">
+              
+              {/* FEED TAB */}
+              {activeTab === "feed" && (
+                <div className="divide-y divide-zinc-900">
+                  {/* Stories Bar */}
+                  <div className="flex items-center gap-3 p-3 overflow-x-auto no-scrollbar border-b border-zinc-900 bg-zinc-950">
+                    <div className="flex flex-col items-center flex-shrink-0">
+                      <div className="w-14 h-14 rounded-full p-0.5 border-2 border-dashed border-zinc-700 relative">
+                        <img src={player.avatar} className="w-full h-full rounded-full object-cover" />
+                        <span className="absolute bottom-0 right-0 bg-pink-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">+</span>
+                      </div>
+                      <span className="text-[10px] text-zinc-400 mt-1">Your Story</span>
+                    </div>
+
+                    {npcs.slice(0, 8).map(npc => (
+                      <div key={npc.id} className="flex flex-col items-center flex-shrink-0 cursor-pointer" onClick={() => { setActiveDmUser(npc); setActiveTab("dms"); }}>
+                        <div className="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600">
+                          <img src={npc.avatar} className="w-full h-full rounded-full object-cover border-2 border-black" />
+                        </div>
+                        <span className="text-[10px] text-zinc-400 mt-1 truncate w-14 text-center">{npc.handle}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Post Stream */}
+                  {feed.length === 0 ? (
+                    <div className="text-center py-20 text-zinc-500 text-sm">
+                      Your feed is quiet. Tap <span className="text-pink-500 font-bold">+</span> to post your first photo!
+                    </div>
+                  ) : (
+                    feed.map(post => (
+                      <article key={post.id} className="bg-zinc-950 pb-4">
+                        {/* Post Header */}
+                        <div className="flex items-center justify-between px-3 py-2.5">
+                          <div className="flex items-center gap-2.5">
+                            <img src={post.author.avatar} className="w-8 h-8 rounded-full object-cover" />
+                            <div>
+                              <div className="text-xs font-bold text-white flex items-center gap-1">
+                                {post.author.name}
+                                {post.author.verified && <span className="text-blue-400 text-[10px]">✓</span>}
+                              </div>
+                              <div className="text-[10px] text-zinc-500">@{post.author.handle}</div>
+                            </div>
+                          </div>
+                          <span className="text-[10px] text-zinc-500">{post.timestamp}</span>
+                        </div>
+
+                        {/* Image */}
+                        <div className="w-full aspect-square bg-zinc-900 relative">
+                          <img src={post.image} alt="Feed Post" className="w-full h-full object-cover" />
+                          {post.vibe && (
+                            <span className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[10px] text-pink-300 font-medium border border-white/10">
+                              {post.vibe}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="px-3 pt-2.5 flex items-center justify-between text-zinc-300">
+                          <div className="flex items-center gap-4">
+                            <button className="hover:text-red-500 transition">
+                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                            </button>
+                            <button className="hover:text-white transition">
+                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                            </button>
+                            <button className="hover:text-white transition">
+                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Likes & Caption */}
+                        <div className="px-3 pt-2 text-xs">
+                          <div className="font-bold text-white">{post.likes.toLocaleString()} likes</div>
+                          <p className="mt-1">
+                            <span className="font-bold text-white mr-1.5">{post.author.handle}</span>
+                            <span className="text-zinc-300">{post.caption}</span>
+                          </p>
+                        </div>
+
+                        {/* Scaled Comments */}
+                        {post.comments && post.comments.length > 0 && (
+                          <div className="px-3 pt-2 space-y-1">
+                            <div className="text-[11px] text-zinc-500 font-medium">View all {post.comments.length} comments</div>
+                            {post.comments.slice(0, 3).map((cmt, idx) => (
+                              <div key={idx} className="text-xs flex items-center justify-between">
+                                <div>
+                                  <span className="font-bold text-white mr-1.5">{cmt.user}</span>
+                                  <span className="text-zinc-300">{cmt.text}</span>
+                                </div>
+                                <span className="text-[10px] text-zinc-500">♡ {cmt.likes || 0}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </article>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {/* CREATE POST MODAL */}
+              {activeTab === "create" && (
+                <div className="p-4 space-y-4">
+                  <div className="flex justify-between items-center border-b border-zinc-800 pb-3">
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-white">Create New Post</h2>
+                    <button onClick={() => setActiveTab("feed")} className="text-xs text-zinc-400">Cancel</button>
+                  </div>
+
+                  {/* Photo Acquisition Mode */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-zinc-400">Photo Source</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button 
+                        onClick={() => setPostMethod("ai")}
+                        className={`py-2 text-xs font-medium rounded-lg border ${postMethod === 'ai' ? 'bg-zinc-800 border-pink-500 text-white' : 'border-zinc-800 text-zinc-400'}`}
+                      >
+                        AI Generate
+                      </button>
+                      <button 
+                        onClick={() => setPostMethod("upload")}
+                        className={`py-2 text-xs font-medium rounded-lg border ${postMethod === 'upload' ? 'bg-zinc-800 border-pink-500 text-white' : 'border-zinc-800 text-zinc-400'}`}
+                      >
+                        Upload Photo
+                      </button>
+                      <button 
+                        onClick={() => setPostMethod("url")}
+                        className={`py-2 text-xs font-medium rounded-lg border ${postMethod === 'url' ? 'bg-zinc-800 border-pink-500 text-white' : 'border-zinc-800 text-zinc-400'}`}
+                      >
+                        Image URL
+                      </button>
+                    </div>
+                  </div>
+
+                  {postMethod === "ai" && (
+                    <div className="space-y-2">
+                      <textarea 
+                        value={postAiPrompt}
+                        onChange={e => setPostAiPrompt(e.target.value)}
+                        placeholder="Describe the photo (e.g., late night music studio recording session, purple lights, aesthetic vibe)"
+                        className="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-pink-500 h-20 resize-none"
+                      />
+                      <button 
+                        onClick={() => {
+                          setIsGeneratingPostImg(true);
+                          const url = generateAIImageUrl(postAiPrompt || "cool aesthetic instagram post photo", 800, 800);
+                          const img = new Image();
+                          img.src = url;
+                          img.onload = () => {
+                            setPostImageUrl(url);
+                            setIsGeneratingPostImg(false);
+                          };
+                          img.onerror = () => setIsGeneratingPostImg(false);
+                        }}
+                        disabled={isGeneratingPostImg}
+                        className="w-full py-2 bg-zinc-900 hover:bg-zinc-800 text-xs text-pink-400 font-semibold rounded-lg border border-pink-500/30 transition"
+                      >
+                        {isGeneratingPostImg ? "Generating with Pollinations AI..." : "✨ Generate Photo"}
+                      </button>
+                    </div>
+                  )}
+
+                  {postMethod === "upload" && (
+                    <div className="border border-dashed border-zinc-800 rounded-lg p-6 text-center">
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={e => handleFileUpload(e, setPostImageUrl)}
+                        className="text-xs text-zinc-400 file:mr-2 file:py-1 file:px-3 file:rounded-md file:border-0 file:bg-zinc-800 file:text-white hover:file:bg-zinc-700"
+                      />
+                    </div>
+                  )}
+
+                  {postMethod === "url" && (
+                    <input 
+                      type="text" 
+                      placeholder="Paste direct https:// image URL"
+                      value={postImageUrl}
+                      onChange={e => setPostImageUrl(e.target.value)}
+                      className="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-pink-500"
+                    />
+                  )}
+
+                  {/* Photo Preview */}
+                  {postImageUrl && (
+                    <div className="w-full aspect-square bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800">
+                      <img src={postImageUrl} alt="Post Preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+
+                  {/* Post Details */}
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs font-medium text-zinc-400">Caption</label>
+                      <textarea 
+                        value={postCaption}
+                        onChange={e => setPostCaption(e.target.value)}
+                        placeholder="Write a caption... tag your vibe or drop hot takes."
+                        className="w-full mt-1 bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-pink-500 h-16 resize-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-medium text-zinc-400">Vibe Tag (Feeds the algorithm)</label>
+                      <select 
+                        value={postVibe}
+                        onChange={e => setPostVibe(e.target.value)}
+                        className="w-full mt-1 bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-pink-500"
+                      >
+                        <option>Aesthetic Dump</option>
+                        <option>Hot Take (Risky / Viral)</option>
+                        <option>Fitness Flex</option>
+                        <option>Music / Creative Lab</option>
+                        <option>Unfiltered Rant</option>
+                        <option>Campus / Everyday Life</option>
+                      </select>
+                    </div>
+
+                    <button 
+                      onClick={handleCreatePost}
+                      className="w-full py-3 bg-pink-600 hover:bg-pink-500 text-white font-bold rounded-xl text-sm transition"
+                    >
+                      Publish to Feed & Calculate Reach 🚀
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* DMS TAB */}
+              {activeTab === "dms" && (
+                <div className="flex flex-col h-[calc(100vh-120px)]">
+                  {activeDmUser ? (
+                    // Conversation View
+                    <div className="flex flex-col h-full">
+                      {/* DM Header */}
+                      <div className="flex items-center justify-between p-3 border-b border-zinc-800 bg-zinc-950">
+                        <div className="flex items-center gap-2.5">
+                          <button onClick={() => setActiveDmUser(null)} className="text-zinc-400 mr-1 text-sm font-bold">←</button>
+                          <img src={activeDmUser.avatar} className="w-8 h-8 rounded-full object-cover" />
+                          <div>
+                            <div className="text-xs font-bold text-white flex items-center gap-1">
+                              {activeDmUser.name}
+                              {activeDmUser.verified && <span className="text-blue-400 text-[10px]">✓</span>}
+                            </div>
+                            <div className="text-[10px] text-pink-400">{activeDmUser.relationship}</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Messages Scroll */}
+                      <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
+                        {(!dms[activeDmUser.handle] || dms[activeDmUser.handle].length === 0) ? (
+                          <div className="text-center py-10 text-zinc-500 text-xs">
+                            No messages yet. Send a DM to break the ice!
+                          </div>
+                        ) : (
+                          dms[activeDmUser.handle].map(msg => (
+                            <div 
+                              key={msg.id} 
+                              className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                            >
+                              <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-xs ${msg.sender === 'user' ? 'bg-pink-600 text-white rounded-br-none' : 'bg-zinc-800 text-zinc-200 rounded-bl-none'}`}>
+                                {msg.text}
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+
+                      {/* DM Input */}
+                      <div className="p-3 border-t border-zinc-800 bg-zinc-950 flex gap-2">
+                        <input 
+                          type="text"
+                          placeholder={`Message @${activeDmUser.handle}...`}
+                          value={dmMessage}
+                          onChange={e => setDmMessage(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && handleSendDm(activeDmUser)}
+                          className="flex-1 bg-zinc-900 border border-zinc-800 rounded-full px-4 py-2 text-xs text-white focus:outline-none focus:border-pink-500"
+                        />
+                        <button 
+                          onClick={() => handleSendDm(activeDmUser)}
+                          className="bg-pink-600 hover:bg-pink-500 text-white rounded-full px-4 py-2 text-xs font-semibold"
+                        >
+                          Send
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    // Inbox List
+                    <div className="divide-y divide-zinc-900">
+                      <div className="p-3 text-xs font-bold uppercase tracking-wider text-zinc-400">Direct Messages</div>
+                      {npcs.map(npc => {
+                        const history = dms[npc.handle] || [];
+                        const lastMsg = history[history.length - 1];
+                        return (
+                          <div 
+                            key={npc.id} 
+                            onClick={() => setActiveDmUser(npc)}
+                            className="flex items-center justify-between p-3 hover:bg-zinc-900/60 cursor-pointer transition"
+                          >
+                            <div className="flex items-center gap-3">
+                              <img src={npc.avatar} className="w-11 h-11 rounded-full object-cover border border-zinc-800" />
+                              <div>
+                                <div className="text-xs font-bold text-white flex items-center gap-1">
+                                  {npc.name}
+                                  {npc.verified && <span className="text-blue-400 text-[10px]">✓</span>}
+                                </div>
+                                <div className="text-[11px] text-zinc-400 truncate w-48">
+                                  {lastMsg ? lastMsg.text : <span className="text-zinc-600 italic">Tap to chat • {npc.relationship}</span>}
+                                </div>
+                              </div>
+                            </div>
+                            <span className="text-[10px] text-zinc-500">{lastMsg ? lastMsg.timestamp : ""}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* PROFILE TAB */}
+              {activeTab === "profile" && (
+                <div className="p-4 space-y-5">
+                  {/* Stats & Avatar */}
+                  <div className="flex items-center justify-between">
+                    <img src={player.avatar} className="w-20 h-20 rounded-full object-cover border-2 border-pink-500 p-0.5" />
+                    <div className="flex gap-6 text-center">
+                      <div>
+                        <div className="text-sm font-bold text-white">{player.posts.length}</div>
+                        <div className="text-[10px] text-zinc-400">Posts</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-white">{player.followers.toLocaleString()}</div>
+                        <div className="text-[10px] text-zinc-400">Followers</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-white">{player.following.toLocaleString()}</div>
+                        <div className="text-[10px] text-zinc-400">Following</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Name & Bio */}
+                  <div>
+                    <h2 className="text-sm font-bold text-white flex items-center gap-1">
+                      {player.name}
+                      {player.fameScore > 50000 && <span className="text-blue-400 text-xs">✓</span>}
+                    </h2>
+                    <div className="text-xs text-zinc-500 font-mono">@{player.handle}</div>
+                    <p className="text-xs text-zinc-300 mt-1.5 whitespace-pre-line">{player.bio}</p>
+                    <div className="text-[11px] text-pink-400 mt-1 font-medium">📍 {player.schoolWork} • {player.age} y/o</div>
+                  </div>
+
+                  {/* Public Lore & Persona Card */}
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3.5 space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-pink-500">Public Lore & Reputation</span>
+                      <span className="text-[10px] font-mono text-zinc-500">Fame: {player.fameScore}</span>
+                    </div>
+                    <p className="text-xs text-zinc-300 leading-relaxed">{player.publicLore}</p>
+                    <div className="text-[10px] text-zinc-500 pt-1 border-t border-zinc-800">
+                      Stated Goal: <span className="text-zinc-400 font-medium">{player.aspirations}</span>
+                    </div>
+                  </div>
+
+                  {/* Profile Grid */}
+                  <div>
+                    <div className="text-xs font-bold uppercase tracking-wider text-zinc-400 border-b border-zinc-800 pb-2 mb-2">Your Posts</div>
+                    {player.posts.length === 0 ? (
+                      <div className="text-center py-10 text-zinc-500 text-xs">No photos posted yet.</div>
+                    ) : (
+                      <div className="grid grid-cols-3 gap-1">
+                        {player.posts.map(p => (
+                          <div key={p.id} className="aspect-square bg-zinc-900">
+                            <img src={p.image} className="w-full h-full object-cover" />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+            </main>
+
+            {/* BOTTOM NAVIGATION BAR */}
+            <nav className="fixed bottom-0 max-w-md w-full bg-zinc-950/95 backdrop-blur-md border-t border-zinc-800/80 px-6 py-3 flex items-center justify-between z-40">
+              <button onClick={() => setActiveTab("feed")} className={`flex flex-col items-center ${activeTab === 'feed' ? 'text-pink-500' : 'text-zinc-500'}`}>
+                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path></svg>
+              </button>
+
+              <button onClick={() => setOnboardingStep(3)} className="flex flex-col items-center text-zinc-500 hover:text-white">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+              </button>
+
+              <button onClick={() => setActiveTab("create")} className="flex items-center justify-center w-10 h-10 rounded-full bg-pink-600 hover:bg-pink-500 text-white shadow-lg shadow-pink-600/30">
+                <span className="text-xl font-bold leading-none mb-0.5">+</span>
+              </button>
+
+              <button onClick={() => { setActiveDmUser(null); setActiveTab("dms"); }} className={`flex flex-col items-center ${activeTab === 'dms' ? 'text-pink-500' : 'text-zinc-500'}`}>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+              </button>
+
+              <button onClick={() => setActiveTab("profile")} className={`flex flex-col items-center ${activeTab === 'profile' ? 'text-pink-500' : 'text-zinc-500'}`}>
+                <img src={player.avatar} className={`w-6 h-6 rounded-full object-cover border ${activeTab === 'profile' ? 'border-pink-500' : 'border-zinc-700'}`} />
+              </button>
+            </nav>
+
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById("root"));
+  </script>
+</body>
+</html>
